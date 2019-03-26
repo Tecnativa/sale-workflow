@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-18 11:57+0000\n"
-"PO-Revision-Date: 2018-10-18 13:58+0200\n"
+"POT-Creation-Date: 2019-03-26 09:25+0000\n"
+"PO-Revision-Date: 2019-03-26 10:26+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.6\n"
+
+#. module: sale_elaboration
+#: model:ir.ui.view,arch_db:sale_elaboration.report_delivery_document
+msgid "<strong>Elab.</strong>"
+msgstr ""
+
+#. module: sale_elaboration
+#: model:ir.ui.view,arch_db:sale_elaboration.report_delivery_document
+#, fuzzy
+#| msgid "Elaborations"
+msgid "<strong>Elaboration</strong>"
+msgstr "Elaboraciones"
 
 #. module: sale_elaboration
 #: model:ir.ui.view,arch_db:sale_elaboration.view_sales_order_line_filter
@@ -28,6 +40,11 @@ msgid "Code must be unique!"
 msgstr "El código debe ser único."
 
 #. module: sale_elaboration
+#: model:ir.model.fields,field_description:sale_elaboration.field_sale_order_line_confirmation_date
+msgid "Confirmation Date"
+msgstr "Fecha de confirmación"
+
+#. module: sale_elaboration
 #: model:ir.model.fields,field_description:sale_elaboration.field_product_elaboration_create_uid
 msgid "Created by"
 msgstr "Creado por"
@@ -36,6 +53,11 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:sale_elaboration.field_product_elaboration_create_date
 msgid "Created on"
 msgstr "Creado el"
+
+#. module: sale_elaboration
+#: model:ir.model.fields,help:sale_elaboration.field_sale_order_line_confirmation_date
+msgid "Date on which the sales order is confirmed."
+msgstr ""
 
 #. module: sale_elaboration
 #: model:ir.model.fields,field_description:sale_elaboration.field_product_elaboration_display_name
@@ -78,6 +100,12 @@ msgid "Is Elaboration"
 msgstr "Es elaboración"
 
 #. module: sale_elaboration
+#: model:ir.model.fields,field_description:sale_elaboration.field_product_product_is_elaboration
+#: model:ir.model.fields,field_description:sale_elaboration.field_product_template_is_elaboration
+msgid "Is elaboration"
+msgstr "Es elaboración"
+
+#. module: sale_elaboration
 #: model:ir.model.fields,field_description:sale_elaboration.field_product_elaboration___last_update
 msgid "Last Modified on"
 msgstr "Última modificación el"
@@ -103,14 +131,14 @@ msgid "Name must be unique!"
 msgstr "¡El nombre debe ser único!"
 
 #. module: sale_elaboration
-#: model:ir.model,name:sale_elaboration.model_stock_move_line
-msgid "Packing Operation"
-msgstr ""
-
-#. module: sale_elaboration
 #: model:ir.model.fields,field_description:sale_elaboration.field_product_elaboration_product_id
 msgid "Product"
 msgstr "Producto"
+
+#. module: sale_elaboration
+#: model:ir.model,name:sale_elaboration.model_product_template
+msgid "Product Template"
+msgstr "Plantilla de producto"
 
 #. module: sale_elaboration
 #: model:ir.model,name:sale_elaboration.model_sale_order
@@ -140,19 +168,9 @@ msgid "Short Code"
 msgstr "Nombre corto"
 
 #. module: sale_elaboration
-#: model:ir.model,name:sale_elaboration.model_stock_move
-msgid "Stock Move"
-msgstr ""
-
-#. module: sale_elaboration
 #: model:ir.model,name:sale_elaboration.model_stock_picking
 msgid "Transfer"
 msgstr "Transferir"
-
-#. module: sale_elaboration
-#: model:ir.model,name:sale_elaboration.model_elaboration
-msgid "elaboration"
-msgstr "Elaboración"
 
 #. module: sale_elaboration
 #: model:ir.model,name:sale_elaboration.model_product_elaboration
