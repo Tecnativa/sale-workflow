@@ -149,7 +149,7 @@ class SaleOrderRecommendation(models.TransientModel):
             key=lambda x: x.times_delivered, reverse=True
         )
 
-    def action_accept(self):
+    def action_accept_x(self):
         """Propagate recommendations to sale order."""
         sequence = max(self.order_id.mapped("order_line.sequence") or [0])
         order_form = Form(self.order_id.sudo())
@@ -173,6 +173,29 @@ class SaleOrderRecommendation(models.TransientModel):
         for index in to_remove:
             order_form.order_line.remove(index)
         order_form.save()
+
+    def action_accept(self):
+        """Propagate recommendations to sale order."""
+        so_line_obj = self.env["sale.order.line"]
+        so_line_ids = []
+        sequence = max(self.order_id.mapped("order_line.sequence") or [0])
+        for wiz_line in self.line_ids.filtered(
+            lambda x: x.sale_line_id or x.units_included
+        ):
+            # Use preexisting line if any
+            if wiz_line.sale_line_id:
+                if wiz_line.units_included:
+                    wiz_line.sale_line_id.update(wiz_line._prepare_update_so_line())
+                    wiz_line.sale_line_id.product_uom_change()
+                else:
+                    wiz_line.sale_line_id.unlink()
+                continue
+            sequence += 1
+            # Use a new in-memory line otherwise
+            so_line = so_line_obj.new(wiz_line._prepare_new_so_line(sequence))
+            so_line = wiz_line._trigger_so_line_onchanges(so_line)
+            so_line_ids.append(so_line.id)
+        self.order_id.order_line += so_line_obj.browse(so_line_ids)
 
 
 class SaleOrderRecommendationLine(models.TransientModel):
@@ -221,11 +244,11 @@ class SaleOrderRecommendationLine(models.TransientModel):
             else:
                 one.price_unit = one._get_last_sale_price_product()
 
-    def _prepare_update_so_line(self, line_form):
+    def _prepare_update_so_line_x(self, line_form):
         """So we can extend SO update"""
         line_form.product_uom_qty = self.units_included
 
-    def _prepare_new_so_line(self, line_form, sequence):
+    def _prepare_new_so_line_x(self, line_form, sequence):
         """So we can extend SO create"""
         line_form.product_id = self.product_id
         line_form.sequence = sequence
@@ -265,3 +288,22 @@ class SaleOrderRecommendationLine(models.TransientModel):
             .with_context(prefetch_fields=False)
         )
         return so_line.price_unit or 0.0
+
+    def _prepare_update_so_line(self):
+        """So we can extend PO update"""
+        return {"product_uom_qty": self.units_included}
+
+    def _prepare_new_so_line(self, sequence):
+        """So we can extend PO create"""
+        return {
+            "order_id": self.wizard_id.order_id.id,
+            "product_id": self.product_id.id,
+            "sequence": sequence,
+        }
+
+    def _trigger_so_line_onchanges(self, so_line):
+        """Extensible method for trigger needed onchanges of the so ling"""
+        so_line.product_id_change()
+        so_line.product_uom_qty = self.units_included
+        so_line.product_uom_change()
+        return so_line
