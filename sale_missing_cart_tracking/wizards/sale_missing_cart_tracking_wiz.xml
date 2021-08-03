@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="sale_missing_cart_tracking_wiz" model="ir.ui.view">
+        <field name="name">Sale missing cart tracking wizard</field>
+        <field name="model">sale.missing.tracking.wiz</field>
+        <field name="arch" type="xml">
+            <form string="Sale missing cart tracking wizard">
+                <group>
+                    <field name="reason_id"/>
+                    <field name="missing_tracking_ids">
+                        <tree string="Sale missing cart tracking">
+                            <field name="partner_id" optional="hide"/>
+                            <field name="order_id" optional="hide"/>
+                            <field name="product_id"/>
+                            <field name="reason_id"/>
+                            <field name="reason_note" optional="show"/>
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button
+                        name="missing_tracking_action_confirm"
+                        string="Confirm"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <act_window
+        id="action_sale_missing_cart_tracking_wiz"
+        name="Sale missing cart tracking"
+        res_model="sale.missing.tracking.wiz"
+        view_mode="form"
+    />
+</odoo>

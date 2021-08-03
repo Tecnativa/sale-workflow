@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_sale_missing_tracking_tree" model="ir.ui.view">
+        <field name="name">sale.missing.tracking.tree</field>
+        <field name="model">sale.missing.tracking</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="reason_id==False" string="Sale missing cart tracking">
+                <field name="order_id" />
+                <field name="date_order" />
+                <field name="commercial_partner_id" />
+                <field name="partner_id" />
+                <field name="user_id" />
+                <field name="product_id" />
+                <field name="reason_id" />
+                <field name="reason_note" />
+                <field name="company_id" groups="base.group_multi_company" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sale_missing_tracking_search" model="ir.ui.view">
+        <field name="name">sale.missing.tracking.search</field>
+        <field name="model">sale.missing.tracking</field>
+        <field name="arch" type="xml">
+            <search string="Search Sale missing cart tracking">
+                <field name="order_id" string="Sale order" />
+                <field name="date_order" />
+                <field name="partner_id" />
+                <field name="product_id" />
+                <field name="user_id" />
+                <separator/>
+                <filter
+                    string="Reason pending"
+                    name="pending"
+                    domain="[('reason_id', '=', False)]"
+                />
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Partner"
+                        name="partner"
+                        context="{'group_by': 'partner_id'}"
+                    />
+                    <filter
+                        string="Product"
+                        name="product"
+                        context="{'group_by': 'product_id'}"
+                    />
+                    <filter
+                        string="Reason"
+                        name="reason"
+                        context="{'group_by': 'reason_id'}"
+                    />
+                    <filter string="Date order" name="date_order" context="{'group_by': 'date_order'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_sale_missing_tracking_form" model="ir.ui.view">
+        <field name="name">sale.missing.tracking.form</field>
+        <field name="model">sale.missing.tracking</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form string="Sale Missing Cart Tracking">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            class="oe_stat_button"
+                            name="action_open_sale_order"
+                            string="Sale order"
+                            type="object"
+                            icon="fa-dollar"
+                        />
+                    </div>
+                    <div class="oe_title oe_inline">
+                        <label for="order_id" class="oe_edit_only" />
+                        <h1>
+                            <field name="order_id" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_order"/>
+                            <field name="partner_id" />
+                            <field name="product_id" />
+                            <field name="user_id" />
+                            <field name="reason_id" />
+                            <field name="reason_note" />
+                            <field
+                                name='company_id'
+                                options="{'no_create': True}"
+                                groups="base.group_multi_company"
+                            />
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" />
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sale_missing_tracking" model="ir.actions.act_window">
+        <field name="name">Sale Missing Cart Tracking</field>
+        <field name="res_model">sale.missing.tracking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="view_sale_missing_tracking_search" />
+    </record>
+    <menuitem
+        id="sale_missing_tracking_menu"
+        parent="sale.sale_order_menu"
+        action="action_sale_missing_tracking"
+        name="Sale Missing Cart Tracking"
+        sequence="120"
+    />
+</odoo>
