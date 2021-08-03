@@ -82,14 +82,21 @@ class SaleOrder(models.Model):
         return missing_tracking
 
     def _action_missing_tracking(self, missing_trackings):
+        wiz = self.env["sale.missing.tracking.wiz"].create({
+            "missing_tracking_ids": [(6, 0, missing_trackings.ids)]
+        })
         action = self.env.ref("sale_missing_cart_tracking.action_sale_missing_cart_tracking_wiz").read()[0]
         action["view_mode"] = "form"
-        action["context"] = {"sale_missing_tracking_ids": missing_trackings.ids}
+        # action["context"] = {"sale_missing_tracking_ids": missing_trackings.ids}
+        action["res_id"] = wiz.id
         return action
 
     def action_confirm(self):
         if not self.env.context.get("bypass_missing_cart_tracking"):
-            missing_trackings = self.env["sale.missing.tracking"].browse()
+            SaleMissingTracking = self.env["sale.missing.tracking"]
+            missing_trackings = SaleMissingTracking.browse()
+            # Remove old tracking linked to this order
+            SaleMissingTracking.search([("order_id", "in", self.ids)]).unlink()
             for order in self:
                 if not order.partner_id.sale_missing_tracking:
                     continue

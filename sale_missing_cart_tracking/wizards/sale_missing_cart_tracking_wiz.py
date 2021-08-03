@@ -2,7 +2,8 @@
 # Copyright 2021 Tecnativa - Sergio Teruel
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class SaleMissingTrackingWiz(models.TransientModel):
@@ -11,23 +12,84 @@ class SaleMissingTrackingWiz(models.TransientModel):
 
     missing_tracking_ids = fields.Many2many(
         comodel_name="sale.missing.tracking",
-        compute="_compute_missing_tracking_ids",
-        readonly=False
+        # compute="_compute_missing_tracking_ids",
+        # readonly=False,
+        # store=True
     )
     reason_id = fields.Many2one(
         comodel_name="sale.missing.tracking.reason"
     )
+    reason_note = fields.Text(compute="_compute_reason_note", store=True, readonly=False)
+    has_pending_lines = fields.Boolean(compute="_compute_has_pending_lines")
+
+    # @api.depends("reason_id")
+    # def _compute_missing_tracking_ids(self):
+    #     self.missing_tracking_ids = self.env["sale.missing.tracking"].browse(
+    #         self.env.context.get("sale_missing_tracking_ids")
+    #     )
 
     @api.depends("reason_id")
-    def _compute_missing_tracking_ids(self):
-        self.missing_tracking_ids = self.env["sale.missing.tracking"].browse(
-            self.env.context.get("sale_missing_tracking_ids")
-        )
+    def _compute_reason_note(self):
+        for rec in self:
+            rec.reason_note = rec.reason_id.note
+
+    @api.depends("missing_tracking_ids.reason_id")
+    def _compute_has_pending_lines(self):
+        self.has_pending_lines = bool(self.missing_tracking_ids.filtered(lambda ln: not ln.reason_id))
+
+    def name_get(self):
+        result = []
+        for record in self:
+            result.append((record.id, _("Sale missing cart tracking")))
+        return result
+
+    def action_mass_update(self):
+        self.missing_tracking_ids.update({
+            "reason_id": self.reason_id.id,
+            "reason_note": self.reason_note,
+        })
+
+    def _check_conditions_to_confirm(self):
+        """
+        """
+        empty_reason_lines = self.missing_tracking_ids.filtered(lambda tr: not tr.reason_id)
+        if empty_reason_lines:
+
+            groups = self.env["sale.missing.tracking"].read_group(
+                domain=[
+                    ("product_id", "in", empty_reason_lines.mapped("product_id").ids),
+                    ("partner_id", "in", empty_reason_lines.mapped("partner_id").ids),
+                    ("reason_id", "=", False),
+                    ("order_id.state", "in", ["sale", "done"]),
+                ],
+                fields=["partner_id", "product_id"],
+                groupby=["partner_id", "product_id"],
+                lazy=False
+            )
+            message = ""
+            max_delay_times = self.env.company.sale_missing_max_delay_times
+            for group in groups:
+                if group["__count"] >= max_delay_times:
+                    message += _("Product: %s Partner: %s\n" % (group["product_id"][1], group["partner_id"][1]))
+            if message:
+                message = _("You have pending this missing tracking to set reason\n") + message
+            return message
 
     def missing_tracking_action_confirm(self):
         """Check conditions to allow to confirm a sale order
         """
-        if 1 == 1:
-            self.with_context(
-                bypass_missing_cart_tracking=True
-            ).missing_tracking_ids.mapped("order_id").action_confirm()
+        message_conditions = self._check_conditions_to_confirm()
+        if message_conditions:
+            raise ValidationError(message_conditions)
+        self.with_context(
+            bypass_missing_cart_tracking=True
+        ).missing_tracking_ids.mapped("order_id").action_confirm()
+
+
+# class SaleMissingTrackingLineWiz(models.TransientModel):
+#     _name = "sale.missing.tracking.line.wiz"
+#     _description = "Sale missing tracking lines wizard"
+#
+#     missing_tracking_wiz_id = fields.Many2one(
+#         comodel_name="sale.missing.tracking.wiz"
+#     )
