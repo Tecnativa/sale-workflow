@@ -89,6 +89,10 @@ class SaleOrder(models.Model):
         action["view_mode"] = "form"
         # action["context"] = {"sale_missing_tracking_ids": missing_trackings.ids}
         action["res_id"] = wiz.id
+        action["flags"] = {
+            "withControlPanel": False,
+        }
+        action['context'] = {'form_view_initial_mode': 'edit'}
         return action
 
     def action_confirm(self):
