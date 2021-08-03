@@ -27,6 +27,7 @@ class SaleMissingTracking(models.Model):
         string="Sale order"
     )
     company_id = fields.Many2one(realated="order_id.company_id", store=True)
+    currency_id = fields.Many2one(realated="order_id.currency_id", store=True)
     date_order = fields.Datetime(realated="order_id.date_order", store=True, index=True)
     commercial_partner_id = fields.Many2one(realated="order_id.commercial_partner_id", store=True)
     partner_id = fields.Many2one(comodel_name="res.partner", realated="order_id.partner_id", store=True, index=True)
@@ -35,6 +36,7 @@ class SaleMissingTracking(models.Model):
     last_sale_line_id = fields.Many2one(comodel_name="sale.order.line")
     reason_id = fields.Many2one(comodel_name="sale.missing.tracking.reason", index=True)
     reason_note = fields.Text()
+    consumption = fields.Monetary()
 
     def action_open_sale_order(self):
         """

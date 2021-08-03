@@ -45,12 +45,24 @@ class SaleOrder(models.Model):
         SaleOrderLine = self.env["sale.order.line"]
         groups = SaleOrderLine.sudo().read_group(
             domain=self._get_missing_product_domain(),
+            fields=["product_id"],
+            groupby=["product_id"]
+        )
+        missing_product_ids = [group["product_id"][0] for group in groups]
+        groups = SaleOrderLine.sudo().read_group(
+            domain=[
+                ("product_id", "in", missing_product_ids),
+                ("order_id.date_order", ">=", fields.Datetime.now() - relativedelta(
+                    months=self.company_id.sale_missing_months_consumption)
+                 )
+            ],
             fields=["product_id", "price_subtotal"],
             groupby=["product_id"]
         )
         missing_product_dict = {}
+        minimal_consumption = self.company_id.sale_missing_minimal_consumption
         for group in groups:
-            if group["price_subtotal"] >= self.company_id.sale_missing_minimal_consumption:
+            if group["price_subtotal"] >= minimal_consumption:
                 missing_product_dict[group["product_id"][0]] = group["price_subtotal"]
         return missing_product_dict
 
@@ -61,9 +73,10 @@ class SaleOrder(models.Model):
             vals_list.append({
                 "order_id": self.id,
                 "product_id": product_id,
+                "consumption": consumption,
                 # TODO: To remove because these fields when related works
                 "partner_id": self.partner_id.id,
-                "date_order": self.date_order,
+                # "date_order": self.date_order,
             })
         missing_tracking = self.env["sale.missing.tracking"].sudo().create(vals_list)
         return missing_tracking
