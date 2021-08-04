@@ -4,16 +4,17 @@
         <field name="name">sale.missing.tracking.tree</field>
         <field name="model">sale.missing.tracking</field>
         <field name="arch" type="xml">
-            <tree decoration-danger="reason_id==False" string="Sale missing cart tracking">
-                <field name="order_id" />
-                <field name="date_order" />
-                <field name="commercial_partner_id" />
-                <field name="partner_id" />
-                <field name="user_id" />
-                <field name="product_id" />
-                <field name="reason_id" />
-                <field name="reason_note" />
-                <field name="company_id" groups="base.group_multi_company" />
+            <tree decoration-danger="reason_id==False" string="Sale missing cart tracking" multi_edit="1">
+                <field name="partner_id" optional="hide"/>
+                <field name="order_id" optional="hide"/>
+                <field name="product_id"/>
+                <field name="reason_id"
+                       options="{'no_create': True}"
+                       attrs="{'required': [('reason_note', '!=', False)]}"
+                />
+                <field name="reason_note" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <button name="action_create_exception" string="Create exception" type="object" icon="fa-exclamation-circle fa-2x"/>
             </tree>
         </field>
     </record>
@@ -24,7 +25,6 @@
         <field name="arch" type="xml">
             <search string="Search Sale missing cart tracking">
                 <field name="order_id" string="Sale order" />
-                <field name="date_order" />
                 <field name="partner_id" />
                 <field name="product_id" />
                 <field name="user_id" />
@@ -33,6 +33,12 @@
                     string="Reason pending"
                     name="pending"
                     domain="[('reason_id', '=', False)]"
+                />
+                <separator/>
+                <filter
+                    string="Date order"
+                    name="date_order"
+                    date="date_order"
                 />
                 <group expand="0" string="Group By">
                     <filter
@@ -50,7 +56,6 @@
                         name="reason"
                         context="{'group_by': 'reason_id'}"
                     />
-                    <filter string="Date order" name="date_order" context="{'group_by': 'date_order'}" />
                 </group>
             </search>
         </field>
@@ -59,7 +64,6 @@
     <record id="view_sale_missing_tracking_form" model="ir.ui.view">
         <field name="name">sale.missing.tracking.form</field>
         <field name="model">sale.missing.tracking</field>
-        <field name="priority">1</field>
         <field name="arch" type="xml">
             <form string="Sale Missing Cart Tracking">
                 <sheet>
@@ -102,10 +106,22 @@
         </field>
     </record>
 
+    <record id="view_sale_missing_tracking_pivot" model="ir.ui.view">
+        <field name="name">sale.missing.tracking.pivot</field>
+        <field name="model">sale.missing.tracking</field>
+        <field name="arch" type="xml">
+             <pivot string="Missing tracking pivot">
+                 <field name="date_order" interval="month" type="col" />
+                 <field name="product_id" type="row" />
+<!--                 <field name="consumption" type="measure" />-->
+             </pivot>
+         </field>
+    </record>
+
     <record id="action_sale_missing_tracking" model="ir.actions.act_window">
         <field name="name">Sale Missing Cart Tracking</field>
         <field name="res_model">sale.missing.tracking</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,pivot</field>
         <field name="domain">[]</field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="view_sale_missing_tracking_search" />

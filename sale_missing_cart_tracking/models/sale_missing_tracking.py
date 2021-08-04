@@ -2,7 +2,10 @@
 # Copyright 2021 Tecnativa - Sergio Teruel
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from collections import defaultdict
+
 from odoo import _, api, fields, models
+from dateutil.relativedelta import relativedelta
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare
 
@@ -26,12 +29,18 @@ class SaleMissingTracking(models.Model):
         comodel_name="sale.order",
         string="Sale order"
     )
+    # state = fields.Selection([
+    #     ("open", "Open"),
+    #     ("close", "Close"),
+    #     ("cancel", "Cancel"),
+    # ])
     company_id = fields.Many2one(comodel_name="res.company", realated="order_id.company_id", store=True)
     currency_id = fields.Many2one(comodel_name="res.currency", realated="order_id.currency_id", store=True)
     date_order = fields.Datetime(realated="order_id.date_order", store=True, index=True)
     commercial_partner_id = fields.Many2one(comodel_name="res.partner", realated="order_id.commercial_partner_id", store=True)
     partner_id = fields.Many2one(comodel_name="res.partner", realated="order_id.partner_id", store=True, index=True)
     user_id = fields.Many2one(comodel_name="res.users", realated="order_id.user_id", store=True)
+    team_id = fields.Many2one(comodel_name="crm.team", related="order_id.team_id", store=True)
     product_id = fields.Many2one(comodel_name="product.product", index=True)
     last_sale_line_id = fields.Many2one(comodel_name="sale.order.line")
     reason_id = fields.Many2one(comodel_name="sale.missing.tracking.reason", index=True)
@@ -53,3 +62,83 @@ class SaleMissingTracking(models.Model):
     def _compute_reason_note(self):
         for rec in self:
             rec.reason_note = rec.reason_id.note
+
+    @api.model
+    def missing_tracking_notification(self):
+        now = fields.Datetime.now()
+        date_from = now - relativedelta(months=self.env.company.sale_missing_months_consumption)
+        date_to = now - relativedelta(days=self.env.company.sale_missing_days_notification)
+        domain = [
+            ("date", ">=", date_from),
+            ("date", "<=", date_to),
+        ]
+        missing_groups = self.read_group(
+            domain=domain,
+            fields=["team_id", "partner_id", "product_id"],
+            groupby=["team_id", "partner_id", "product_id"],
+            lazy=False
+        )
+        exception_groups = self.env["sale.missing.tracking.exception"].read_group(
+            domain=[
+                ("state", "=", "approved"),
+            ],
+            fields=["partner_id", "product_id"],
+            groupby=["partner_id", "product_id"],
+            lazy=False
+        )
+        exception_set = {(g["partner_id"][0], g["product_id"][0]) for g in exception_groups}
+        missing_dic = defaultdict(set)
+        for group in missing_groups:
+            missing_dic[group["team_id"][0]].append((group["partner_id"][0], group["product_id"][0]))
+        for team_id, missing_set in missing_dic.items():
+            result_set = missing_set - exception_set
+            if result_set:
+                self.send_notification(team_id)
+
+    @api.model
+    def send_notification(self, team_id):
+        template = self.env.ref("sale_missing_cart_tracking.missing_tracking_notification_template")
+        mt = self.env.ref("sale_missing_cart_tracking.mt_sale_missing_cart_tracking_notification")
+        team = self.env["crm.team"].browse(team_id)
+        recipients = team.message_follower_ids.filtered(
+            lambda f: mt in f.subtype_ids).mapped("partner_id")
+        composer = (
+            self.env["mail.compose.message"]
+            .with_context(
+                {
+                    "lang": self.env.user.lang,
+                    "default_composition_mode": "mass_mail",
+                    "default_notify": True,
+                    "default_model": self._name,
+                    "default_template_id": template.id,
+                    "active_ids": self.ids,
+                    "default_partner_ids": recipients.ids,
+                    # "doc_ids": moves.ids,
+                }
+            )
+            .create({})
+        )
+        values = composer.onchange_template_id(
+            template.id, "mass_mail", self._name, self.id
+        )["value"]
+        composer.write(values)
+        composer.send_mail()
+        return True
+
+    def action_create_exception(self):
+        exception_dic = {}
+        for rec in self:
+            key = (rec.partner_id.id, rec.product_id.id)
+            if key not in exception_dic:
+                exception_dic[key] = {
+                    "partner_id": rec.partner_id.id,
+                    "product_id": rec.product_id.id,
+                    "user_id": rec.user_id.id,
+                    "reason_id": rec.reason_id.id,
+                    "reason_note": rec.reason_note,
+                    "consumption": rec.consumption,
+                }
+        exceptions = self.env["sale.missing.tracking.exception"].create(
+            exception_dic.values()
+        )
+        exceptions.action_approve()

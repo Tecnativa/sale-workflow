@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from dateutil.relativedelta import relativedelta
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class SaleOrder(models.Model):
@@ -76,11 +76,14 @@ class SaleOrder(models.Model):
                 "consumption": consumption,
                 # TODO: To remove because these fields when related works
                 "partner_id": self.partner_id.id,
-                # "date_order": self.date_order,
+                "commercial_partner_id": self.partner_id.commercial_partner_id.id,
+                "date_order": self.date_order,
+                "user_id": self.user_id.id,
             })
         missing_tracking = self.env["sale.missing.tracking"].sudo().create(vals_list)
         return missing_tracking
 
+    @api.model
     def _action_missing_tracking(self, missing_trackings):
         wiz = self.env["sale.missing.tracking.wiz"].create({
             "missing_tracking_ids": [(6, 0, missing_trackings.ids)]
@@ -109,3 +112,9 @@ class SaleOrder(models.Model):
                 return self._action_missing_tracking(missing_trackings)
         res = super().action_confirm()
         return res
+
+    def action_pending_missing_tracking_reason(self):
+        missing_trackings = self.env["sale.missing.tracking"].search([
+            ("reason_id", "=", False),
+        ])
+        return self._action_missing_tracking(missing_trackings)

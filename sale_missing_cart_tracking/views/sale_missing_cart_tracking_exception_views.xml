@@ -74,17 +74,17 @@
         <field name="arch" type="xml">
             <form string="Sale missing cart tracking exception">
                 <header>
+                    <button
+                        name="action_approve"
+                        string="Approve"
+                        type="object"
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', '!=', 'request')]}"
+                    />
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-<!--                        <button-->
-<!--                            class="oe_stat_button"-->
-<!--                            name="action_open_sale_order"-->
-<!--                            string="Sale order"-->
-<!--                            type="object"-->
-<!--                            icon="fa-dollar"-->
-<!--                        />-->
                     </div>
                     <field name="active" invisible="1"/>
                     <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>

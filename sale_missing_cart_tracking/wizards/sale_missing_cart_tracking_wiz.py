@@ -81,10 +81,18 @@ class SaleMissingTrackingWiz(models.TransientModel):
         message_conditions = self._check_conditions_to_confirm()
         if message_conditions:
             raise ValidationError(message_conditions)
-        self.with_context(
+        sale_orders = self.with_context(
             bypass_missing_cart_tracking=True
-        ).missing_tracking_ids.mapped("order_id").action_confirm()
-
+        ).missing_tracking_ids.mapped("order_id")
+        sale_orders.action_confirm()
+        action = self.env.ref("sale.action_orders").read()[0]
+        if len(sale_orders) == 1:
+            view = self.env.ref("sale.view_order_form", False)
+            action["views"] = [(view and view.id or False, "form")]
+            action["res_id"] = sale_orders.id
+        else:
+            action["domain"] = [("id", "in", sale_orders.ids)]
+        return action
 
 # class SaleMissingTrackingLineWiz(models.TransientModel):
 #     _name = "sale.missing.tracking.line.wiz"

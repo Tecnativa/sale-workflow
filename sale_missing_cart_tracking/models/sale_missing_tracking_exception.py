@@ -15,7 +15,7 @@ class SaleMissingTrackingException(models.Model):
 
     company_id = fields.Many2one(
         comodel_name="res.company",
-        default = lambda self: self.env.company,
+        default=lambda self: self.env.company,
         required=True
     )
     currency_id = fields.Many2one(related="company_id.currency_id")
@@ -38,4 +38,37 @@ class SaleMissingTrackingException(models.Model):
         comodel_name="sale.missing.tracking",
         string="Missing cart tracking"
     )
+    reason_id = fields.Many2one(
+        comodel_name="sale.missing.tracking.reason", index=True)
+    reason_note = fields.Text(
+        compute="_compute_reason_note",
+        store=True,
+        readonly=False
+    )
     consumption = fields.Monetary()
+
+    @api.constrains("partner_id", "product_id")
+    def _check_unique_partner_product_approved(self):
+        exceptions = self.search([
+            ("partner_id", "in", self.mapped("partner_id").ids),
+            ("product_id", "=", self.mapped("product_id").ids),
+            ("state", "in", ["approved", "request"]),
+            ("id", "not in", self.ids),
+        ])
+        message = ""
+        for rec in self:
+            if exceptions.filtered(lambda e: e.partner_id == rec.partner_id and
+                                             e.product_id == rec.product_id):
+                message += "\nPartner: %s Product: %s" % (rec.partner_id.name, rec.product_id.display_name)
+        if message:
+            raise ValidationError(
+                _("You already have exceptions for" + message)
+            )
+
+    @api.depends("reason_id")
+    def _compute_reason_note(self):
+        for rec in self:
+            rec.reason_note = rec.reason_id.note
+
+    def action_approve(self):
+        self.state = "approved"

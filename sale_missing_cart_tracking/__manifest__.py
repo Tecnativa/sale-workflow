@@ -17,6 +17,9 @@
     "data": [
         "security/security.xml",
         "security/ir.model.access.csv",
+        "data/sale_missing_cart_tracking_data.xml",
+        "data/mail_data.xml",
+        "data/mail_template_data.xml",
         "views/res_config_settings_views.xml",
         "views/product_views.xml",
         "views/res_partner_views.xml",
