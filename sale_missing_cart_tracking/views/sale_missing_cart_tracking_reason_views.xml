@@ -11,14 +11,13 @@
             </tree>
         </field>
     </record>
-
     <record id="view_sale_missing_tracking_reason_search" model="ir.ui.view">
         <field name="name">sale.missing.tracking.reason.search</field>
         <field name="model">sale.missing.tracking.reason</field>
         <field name="arch" type="xml">
             <search string="Search Sale missing cart tracking reason">
                 <field name="name" string="Name" />
-                <separator/>
+                <separator />
                 <filter
                     string="Recovered"
                     name="recovered"
@@ -27,7 +26,6 @@
             </search>
         </field>
     </record>
-
     <record id="action_sale_missing_tracking_reason" model="ir.actions.act_window">
         <field name="name">Sale missing cart tracking reason</field>
         <field name="res_model">sale.missing.tracking.reason</field>

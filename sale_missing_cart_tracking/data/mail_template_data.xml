@@ -14,7 +14,8 @@
             name="partner_to"
         >${object.partner_id and object.partner_id.id or ''}</field>
         <field
-            name="model_id" ref="sale_missing_cart_tracking.model_sale_missing_tracking"
+            name="model_id"
+            ref="sale_missing_cart_tracking.model_sale_missing_tracking"
         />
         <field name="auto_delete" eval="True" />
         <field
@@ -30,5 +31,4 @@ products stock out summary.
 
 ]]></field>
     </record>
-
 </odoo>

@@ -6,11 +6,15 @@
         <field name="arch" type="xml">
             <form string="Sale missing cart tracking wizard">
                 <sheet>
-                    <field name="has_pending_lines" invisible="1"/>
+                    <field name="has_pending_lines" invisible="1" />
                     <group>
-                        <field name="reason_id" options="{'no_create': True}"/>
-                        <field name="reason_note"/>
-                        <button name="action_mass_update" type="object" string="Update reason"/>
+                        <field name="reason_id" options="{'no_create': True}" />
+                        <field name="reason_note" />
+                        <button
+                            name="action_mass_update"
+                            type="object"
+                            string="Update reason"
+                        />
                     </group>
                     <group>
                         <field name="missing_tracking_ids" nolabel="1">
@@ -42,10 +46,13 @@
                             confirm="You have sale missing references without reason.
                                      Do you want delay set the reason of it?"
                         />
-                        <button string="Cancel" class="btn-secondary" special="cancel" />
+                        <button
+                            string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"
+                        />
                     </footer>
                 </sheet>
-
             </form>
         </field>
     </record>

@@ -16,10 +16,10 @@ class SaleMissingTrackingWiz(models.TransientModel):
         # readonly=False,
         # store=True
     )
-    reason_id = fields.Many2one(
-        comodel_name="sale.missing.tracking.reason"
+    reason_id = fields.Many2one(comodel_name="sale.missing.tracking.reason")
+    reason_note = fields.Text(
+        compute="_compute_reason_note", store=True, readonly=False
     )
-    reason_note = fields.Text(compute="_compute_reason_note", store=True, readonly=False)
     has_pending_lines = fields.Boolean(compute="_compute_has_pending_lines")
 
     # @api.depends("reason_id")
@@ -35,7 +35,9 @@ class SaleMissingTrackingWiz(models.TransientModel):
 
     @api.depends("missing_tracking_ids.reason_id")
     def _compute_has_pending_lines(self):
-        self.has_pending_lines = bool(self.missing_tracking_ids.filtered(lambda ln: not ln.reason_id))
+        self.has_pending_lines = bool(
+            self.missing_tracking_ids.filtered(lambda ln: not ln.reason_id)
+        )
 
     def name_get(self):
         result = []
@@ -44,15 +46,16 @@ class SaleMissingTrackingWiz(models.TransientModel):
         return result
 
     def action_mass_update(self):
-        self.missing_tracking_ids.update({
-            "reason_id": self.reason_id.id,
-            "reason_note": self.reason_note,
-        })
+        self.missing_tracking_ids.update(
+            {"reason_id": self.reason_id.id, "reason_note": self.reason_note,}
+        )
 
     def _check_conditions_to_confirm(self):
         """
         """
-        empty_reason_lines = self.missing_tracking_ids.filtered(lambda tr: not tr.reason_id)
+        empty_reason_lines = self.missing_tracking_ids.filtered(
+            lambda tr: not tr.reason_id
+        )
         if empty_reason_lines:
 
             groups = self.env["sale.missing.tracking"].read_group(
@@ -64,15 +67,21 @@ class SaleMissingTrackingWiz(models.TransientModel):
                 ],
                 fields=["partner_id", "product_id"],
                 groupby=["partner_id", "product_id"],
-                lazy=False
+                lazy=False,
             )
             message = ""
             max_delay_times = self.env.company.sale_missing_max_delay_times
             for group in groups:
                 if group["__count"] >= max_delay_times:
-                    message += _("Product: %s Partner: %s\n" % (group["product_id"][1], group["partner_id"][1]))
+                    message += _(
+                        "Product: %s Partner: %s\n"
+                        % (group["product_id"][1], group["partner_id"][1])
+                    )
             if message:
-                message = _("You have pending this missing tracking to set reason\n") + message
+                message = (
+                    _("You have pending this missing tracking to set reason\n")
+                    + message
+                )
             return message
 
     def missing_tracking_action_confirm(self):
@@ -93,6 +102,7 @@ class SaleMissingTrackingWiz(models.TransientModel):
         else:
             action["domain"] = [("id", "in", sale_orders.ids)]
         return action
+
 
 # class SaleMissingTrackingLineWiz(models.TransientModel):
 #     _name = "sale.missing.tracking.line.wiz"

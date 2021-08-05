@@ -4,8 +4,9 @@
 
 from collections import defaultdict
 
-from odoo import _, api, fields, models
 from dateutil.relativedelta import relativedelta
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare
 
@@ -25,31 +26,48 @@ class SaleMissingTracking(models.Model):
     _description = "Sale Missing Cart Tracking"
     _order = "partner_id, date_order desc, id desc"
 
-    order_id = fields.Many2one(
-        comodel_name="sale.order",
-        string="Sale order"
+    active = fields.Boolean(default=True)
+    order_id = fields.Many2one(comodel_name="sale.order", string="Sale order")
+    state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("request", "Requested"),
+            ("approved", "Approved"),
+            ("refused", "Refused"),
+            ("recovered", "Recovered"),
+            ("cancel", "Cancelled"),
+        ],
+        default="draft",
     )
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('request', 'Requested'),
-        ('approved', 'Approved'),
-        ('refused', 'Refused'),
-        ('recovered', 'Recovered')
-    ], default="draft")
-    company_id = fields.Many2one(comodel_name="res.company", realated="order_id.company_id", store=True)
-    currency_id = fields.Many2one(comodel_name="res.currency", realated="order_id.currency_id", store=True)
-    date_order = fields.Datetime(realated="order_id.date_order", store=True, index=True)
-    commercial_partner_id = fields.Many2one(comodel_name="res.partner", realated="order_id.commercial_partner_id", store=True)
-    partner_id = fields.Many2one(comodel_name="res.partner", realated="order_id.partner_id", store=True, index=True)
-    user_id = fields.Many2one(comodel_name="res.users", realated="order_id.user_id", store=True)
-    team_id = fields.Many2one(comodel_name="crm.team", related="order_id.team_id", store=True)
+    company_id = fields.Many2one(
+        comodel_name="res.company", related="order_id.company_id", store=True
+    )
+    currency_id = fields.Many2one(
+        comodel_name="res.currency", related="order_id.currency_id", store=True
+    )
+    date_order = fields.Datetime(related="order_id.date_order", store=True, index=True)
+    commercial_partner_id = fields.Many2one(
+        comodel_name="res.partner",
+        related="order_id.partner_id.commercial_partner_id",
+        store=True,
+    )
+    partner_id = fields.Many2one(
+        comodel_name="res.partner",
+        related="order_id.partner_id",
+        store=True,
+        index=True,
+    )
+    user_id = fields.Many2one(
+        comodel_name="res.users", related="order_id.user_id", store=True
+    )
+    team_id = fields.Many2one(
+        comodel_name="crm.team", related="order_id.team_id", store=True
+    )
     product_id = fields.Many2one(comodel_name="product.product", index=True)
     last_sale_line_id = fields.Many2one(comodel_name="sale.order.line")
     reason_id = fields.Many2one(comodel_name="sale.missing.tracking.reason", index=True)
     reason_note = fields.Text(
-        compute="_compute_reason_note",
-        store=True,
-        readonly=False
+        compute="_compute_reason_note", store=True, readonly=False
     )
     consumption = fields.Monetary()
     tracking_exception_ids = fields.Many2many(
@@ -57,7 +75,7 @@ class SaleMissingTracking(models.Model):
         relation="missing_tracking_exception_missing_tracking_rel",
         column1="tracking_id",
         column2="exception_id",
-        string="Missing cart tracking exceptions"
+        string="Missing cart tracking exceptions",
     )
 
     # def _compute_state(self):
@@ -88,11 +106,21 @@ class SaleMissingTracking(models.Model):
         for rec in self:
             rec.reason_note = rec.reason_id.note
 
+    def name_get(self):
+        result = []
+        for rec in self:
+            result.append((rec.id, _("%s - %s") % (rec.partner_id.name, rec.product_id.display_name)))
+        return result
+
     @api.model
     def missing_tracking_notification(self):
         now = fields.Datetime.now()
-        date_from = now - relativedelta(months=self.env.company.sale_missing_months_consumption)
-        date_to = now - relativedelta(days=self.env.company.sale_missing_days_notification)
+        date_from = now - relativedelta(
+            months=self.env.company.sale_missing_months_consumption
+        )
+        date_to = now - relativedelta(
+            days=self.env.company.sale_missing_days_notification
+        )
         domain = [
             ("date", ">=", date_from),
             ("date", "<=", date_to),
@@ -101,20 +129,22 @@ class SaleMissingTracking(models.Model):
             domain=domain,
             fields=["team_id", "partner_id", "product_id"],
             groupby=["team_id", "partner_id", "product_id"],
-            lazy=False
+            lazy=False,
         )
         exception_groups = self.env["sale.missing.tracking.exception"].read_group(
-            domain=[
-                ("state", "=", "approved"),
-            ],
+            domain=[("state", "=", "approved"),],
             fields=["partner_id", "product_id"],
             groupby=["partner_id", "product_id"],
-            lazy=False
+            lazy=False,
         )
-        exception_set = {(g["partner_id"][0], g["product_id"][0]) for g in exception_groups}
+        exception_set = {
+            (g["partner_id"][0], g["product_id"][0]) for g in exception_groups
+        }
         missing_dic = defaultdict(set)
         for group in missing_groups:
-            missing_dic[group["team_id"][0]].append((group["partner_id"][0], group["product_id"][0]))
+            missing_dic[group["team_id"][0]].append(
+                (group["partner_id"][0], group["product_id"][0])
+            )
         for team_id, missing_set in missing_dic.items():
             result_set = missing_set - exception_set
             if result_set:
@@ -122,11 +152,16 @@ class SaleMissingTracking(models.Model):
 
     @api.model
     def send_notification(self, team_id):
-        template = self.env.ref("sale_missing_cart_tracking.missing_tracking_notification_template")
-        mt = self.env.ref("sale_missing_cart_tracking.mt_sale_missing_cart_tracking_notification")
+        template = self.env.ref(
+            "sale_missing_cart_tracking.missing_tracking_notification_template"
+        )
+        mt = self.env.ref(
+            "sale_missing_cart_tracking.mt_sale_missing_cart_tracking_notification"
+        )
         team = self.env["crm.team"].browse(team_id)
         recipients = team.message_follower_ids.filtered(
-            lambda f: mt in f.subtype_ids).mapped("partner_id")
+            lambda f: mt in f.subtype_ids
+        ).mapped("partner_id")
         composer = (
             self.env["mail.compose.message"]
             .with_context(
@@ -167,7 +202,8 @@ class SaleMissingTracking(models.Model):
             exception_dic.values()
         )
         if self.env.user.has_group(
-                "sale_missing_cart_tracking.group_sale_missing_tracking_manager"):
+            "sale_missing_cart_tracking.group_sale_missing_tracking_manager"
+        ):
             exceptions.action_approve()
         else:
             exceptions.action_request()
