@@ -27,7 +27,11 @@
         <field name="type">ir.actions.server</field>
         <field name="model_id" ref="model_sale_order"/>
         <field name="state">code</field>
-        <field name="code">action = model.action_pending_missing_tracking_reason()</field>
+        <field name="code">
+action = model.action_pending_missing_tracking_reason()
+action.pop("flags", None)
+action["context"]["action_from_menu"] = True
+        </field>
     </record>
 
 </odoo>

@@ -9,7 +9,7 @@ from odoo.tools import float_compare
 
 class SaleMissingTrackingException(models.Model):
     _name = "sale.missing.tracking.exception"
-    _inherit = ["mail.thread"]
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Sale Missing Cart Tracking Exceptions"
     _order = "date desc, id desc"
 
@@ -36,6 +36,9 @@ class SaleMissingTrackingException(models.Model):
     active = fields.Boolean(default=True)
     missing_tracking_ids = fields.Many2many(
         comodel_name="sale.missing.tracking",
+        relation="missing_tracking_exception_missing_tracking_rel",
+        column1="exception_id",
+        column2="tracking_id",
         string="Missing cart tracking"
     )
     reason_id = fields.Many2one(
@@ -70,5 +73,58 @@ class SaleMissingTrackingException(models.Model):
         for rec in self:
             rec.reason_note = rec.reason_id.note
 
+    def action_request(self):
+        """To extend in other modules
+        """
+        pass
+
     def action_approve(self):
         self.state = "approved"
+        self.date = fields.Datetime.now()
+
+    def action_refuse(self):
+        self.state = "refused"
+        self.date = fields.Datetime.now()
+
+    # @api.model
+    # def get_exceptions(self, partners, products, states=["request, approved"]):
+    #     exceptions = self.search([
+    #         ("partner_id", "in", partners.ids),
+    #         ("product_id", "in", products.ids),
+    #         ("state", "in", states),
+    #     ])
+    #     return exceptions
+
+    def _update_tracking_state(self, vals):
+        if vals["state"] == "request":
+            states = ["draft"]
+        else:
+            states = ["draft", "request"]
+        for rec in self:
+            trackings = self.env["sale.missing.tracking"].search([
+                ("partner_id", "=", rec.partner_id.id),
+                ("product_id", "=", rec.product_id.id),
+                ("state", "in", states),
+            ])
+            trackings.state = vals["state"]
+            rec.missing_tracking_ids = trackings
+
+    @api.model
+    def create(self, vals):
+        rec = super().create(vals)
+        if rec and "state" in vals:
+            rec._update_tracking_state(vals)
+        return rec
+
+    def write(self, vals):
+        if "state" in vals:
+            self._update_tracking_state(vals)
+        return super().write(vals)
+
+    def _log_activity(self):
+        self.activity_schedule(
+            'sale_missing_cart_tracking.mail_activity_data_warning',
+            summary="Sale missing cart tracking exception request",
+            note="To approve",
+            user_id=responsible.id or SUPERUSER_ID
+        )

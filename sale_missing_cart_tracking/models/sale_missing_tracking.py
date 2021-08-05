@@ -29,11 +29,13 @@ class SaleMissingTracking(models.Model):
         comodel_name="sale.order",
         string="Sale order"
     )
-    # state = fields.Selection([
-    #     ("open", "Open"),
-    #     ("close", "Close"),
-    #     ("cancel", "Cancel"),
-    # ])
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('request', 'Requested'),
+        ('approved', 'Approved'),
+        ('refused', 'Refused'),
+        ('recovered', 'Recovered')
+    ], default="draft")
     company_id = fields.Many2one(comodel_name="res.company", realated="order_id.company_id", store=True)
     currency_id = fields.Many2one(comodel_name="res.currency", realated="order_id.currency_id", store=True)
     date_order = fields.Datetime(realated="order_id.date_order", store=True, index=True)
@@ -50,6 +52,29 @@ class SaleMissingTracking(models.Model):
         readonly=False
     )
     consumption = fields.Monetary()
+    tracking_exception_ids = fields.Many2many(
+        comodel_name="sale.missing.tracking.exception",
+        relation="missing_tracking_exception_missing_tracking_rel",
+        column1="tracking_id",
+        column2="exception_id",
+        string="Missing cart tracking exceptions"
+    )
+
+    # def _compute_state(self):
+    #     Exception = self.env["sale.missing.tracking.exception"]
+    #     domain = [
+    #         ("partner_id", "in", self.mapped("partner_id").ids),
+    #         ("product_id", "=", self.mapped("product_id").ids),
+    #         ("state", "in", ["approved", "request"]),
+    #     ]
+    #     exceptions = Exception.read_group(
+    #         domain=domain,
+    #         fields=["partner_id", "product_id", "state"],
+    #         groupby=["partner_id", "product_id", "state"],
+    #         lazy=False,
+    #     )
+    #     for rec in self:
+    #         exceptions
 
     def action_open_sale_order(self):
         """
@@ -141,4 +166,9 @@ class SaleMissingTracking(models.Model):
         exceptions = self.env["sale.missing.tracking.exception"].create(
             exception_dic.values()
         )
-        exceptions.action_approve()
+        if self.env.user.has_group(
+                "sale_missing_cart_tracking.group_sale_missing_tracking_manager"):
+            exceptions.action_approve()
+        else:
+            exceptions.action_request()
+        return exceptions
