@@ -3,8 +3,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import float_compare
+from odoo.exceptions import ValidationError
 
 
 class SaleMissingTrackingException(models.Model):
@@ -62,8 +61,7 @@ class SaleMissingTrackingException(models.Model):
                 and e.product_id == rec.product_id
             ):
                 message += "\nPartner: {} Product: {}".format(
-                    rec.partner_id.name,
-                    rec.product_id.display_name,
+                    rec.partner_id.name, rec.product_id.display_name,
                 )
         if message:
             raise ValidationError(_("You already have exceptions for" + message))
@@ -76,7 +74,12 @@ class SaleMissingTrackingException(models.Model):
     def name_get(self):
         result = []
         for rec in self:
-            result.append((rec.id, _("%s - %s") % (rec.partner_id.name, rec.product_id.display_name)))
+            result.append(
+                (
+                    rec.id,
+                    _("%s - %s") % (rec.partner_id.name, rec.product_id.display_name),
+                )
+            )
         return result
 
     def action_request(self):

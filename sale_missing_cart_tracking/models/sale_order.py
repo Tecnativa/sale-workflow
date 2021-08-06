@@ -137,7 +137,7 @@ class SaleOrder(models.Model):
 
     def action_pending_missing_tracking_reason(self):
         missing_trackings = self.env["sale.missing.tracking"].search(
-            [("reason_id", "=", False),]
+            [("reason_id", "=", False)]
         )
         return self._action_missing_tracking(missing_trackings)
 
@@ -145,9 +145,9 @@ class SaleOrder(models.Model):
         """ Remove missing tracking linked
         """
         res = super().action_cancel()
-        trackings = self.env["sale.missing.tracking"].search([
-            ("order_id", "in", self.ids)
-        ])
+        trackings = self.env["sale.missing.tracking"].search(
+            [("order_id", "in", self.ids)]
+        )
         trackings.state = "cancel"
         return res
 
@@ -159,10 +159,12 @@ class SaleOrderLine(models.Model):
     def create(self, vals_list):
         lines = super().create(vals_list)
         for line in lines:
-            if line.product_id and line.order_id.state == 'sale':
-                trackings = self.env["sale.missing.tracking"].search([
-                    ("order_id", "=", line.order_id.id),
-                    ("product_id", "=", line.product_id.id),
-                ])
+            if line.product_id and line.order_id.state == "sale":
+                trackings = self.env["sale.missing.tracking"].search(
+                    [
+                        ("order_id", "=", line.order_id.id),
+                        ("product_id", "=", line.product_id.id),
+                    ]
+                )
                 trackings.state = "recovered"
         return lines

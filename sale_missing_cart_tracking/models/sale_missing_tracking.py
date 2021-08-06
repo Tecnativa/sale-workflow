@@ -7,8 +7,6 @@ from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import float_compare
 
 
 class SaleMissingTrackingReason(models.Model):
@@ -27,7 +25,9 @@ class SaleMissingTracking(models.Model):
     _order = "partner_id, date_order desc, id desc"
 
     active = fields.Boolean(default=True)
-    order_id = fields.Many2one(comodel_name="sale.order", string="Sale order", required=True)
+    order_id = fields.Many2one(
+        comodel_name="sale.order", string="Sale order", required=True
+    )
     state = fields.Selection(
         [
             ("draft", "Draft"),
@@ -109,7 +109,12 @@ class SaleMissingTracking(models.Model):
     def name_get(self):
         result = []
         for rec in self:
-            result.append((rec.id, _("%s - %s") % (rec.partner_id.name, rec.product_id.display_name)))
+            result.append(
+                (
+                    rec.id,
+                    _("%s - %s") % (rec.partner_id.name, rec.product_id.display_name),
+                )
+            )
         return result
 
     @api.model
@@ -132,7 +137,7 @@ class SaleMissingTracking(models.Model):
             lazy=False,
         )
         exception_groups = self.env["sale.missing.tracking.exception"].read_group(
-            domain=[("state", "=", "approved"),],
+            domain=[("state", "=", "approved")],
             fields=["partner_id", "product_id"],
             groupby=["partner_id", "product_id"],
             lazy=False,
@@ -210,8 +215,8 @@ class SaleMissingTracking(models.Model):
         # Set exceptions to trackings
         for rec in self:
             rec.tracking_exception_ids = exceptions.filtered(
-                lambda e: e.partner_id == rec.partner_id and
-                e.product_id == rec.product_id
+                lambda e: e.partner_id == rec.partner_id
+                and e.product_id == rec.product_id
             )
         return exceptions
 

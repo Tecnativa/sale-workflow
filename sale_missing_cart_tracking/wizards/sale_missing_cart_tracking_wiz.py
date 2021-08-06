@@ -47,7 +47,7 @@ class SaleMissingTrackingWiz(models.TransientModel):
 
     def action_mass_update(self):
         self.missing_tracking_ids.update(
-            {"reason_id": self.reason_id.id, "reason_note": self.reason_note,}
+            {"reason_id": self.reason_id.id, "reason_note": self.reason_note}
         )
 
     def _check_conditions_to_confirm(self):
