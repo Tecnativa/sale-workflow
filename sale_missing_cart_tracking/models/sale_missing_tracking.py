@@ -15,7 +15,7 @@ class SaleMissingTrackingReason(models.Model):
 
     name = fields.Char(required=True)
     note = fields.Text()
-    recovered = fields.Boolean()
+    # recovered = fields.Boolean()
 
 
 class SaleMissingTracking(models.Model):
