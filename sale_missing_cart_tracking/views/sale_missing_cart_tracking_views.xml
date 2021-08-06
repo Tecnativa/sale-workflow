@@ -26,6 +26,12 @@
                     groups="base.group_multi_company"
                     optional="hide"
                 />
+<!--                <button-->
+<!--                    name="action_update_reason"-->
+<!--                    string="Update reason"-->
+<!--                    type="object"-->
+<!--                    icon="fa-copy fa-2x"-->
+<!--                />-->
                 <button
                     name="action_create_exception"
                     string="Create exception"
@@ -207,7 +213,7 @@
         id="sale_missing_tracking_menu"
         parent="sale_missing_cart_tracking_menu_root"
         action="action_sale_missing_tracking"
-        name="Sale Missing Cart Tracking"
+        name="Missing Cart Tracking"
         sequence="10"
     />
 </odoo>

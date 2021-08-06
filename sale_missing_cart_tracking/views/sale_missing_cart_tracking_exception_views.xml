@@ -135,7 +135,7 @@
         id="sale_missing_tracking_exception_menu"
         parent="sale_missing_cart_tracking_menu_root"
         action="action_sale_missing_tracking_exception"
-        name="Sale missing cart tracking exception"
+        name="Missing cart tracking exception"
         sequence="20"
     />
 </odoo>

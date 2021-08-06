@@ -8,7 +8,7 @@
                 expr="//div[@id='sale_config_online_confirmation_sign']/.."
                 position="after"
             >
-                <h2>Missing Products</h2>
+                <h2>Missing cart products tracking</h2>
                 <div
                     class="row mt16 o_settings_container"
                     id="sale_missing_cart_tracking"
@@ -17,7 +17,6 @@
                         <div class="o_setting_right_pane">
                             <label for="sale_missing_max_delay_times" />
                             <div class="text-muted">
-                                Set ......
                             </div>
                             <field name="sale_missing_max_delay_times" />
                         </div>
@@ -26,7 +25,6 @@
                         <div class="o_setting_right_pane">
                             <label for="sale_missing_days_notification" />
                             <div class="text-muted">
-                                Set ......
                             </div>
                             <field name="sale_missing_days_notification" />
                         </div>
@@ -35,7 +33,6 @@
                         <div class="o_setting_right_pane">
                             <label for="sale_missing_days_from" />
                             <div class="text-muted">
-                                Set ......
                             </div>
                             <field name="sale_missing_days_from" />
                         </div>
@@ -44,7 +41,6 @@
                         <div class="o_setting_right_pane">
                             <label for="sale_missing_days_to" />
                             <div class="text-muted">
-                                Set ......
                             </div>
                             <field name="sale_missing_days_to" />
                         </div>
@@ -53,7 +49,6 @@
                         <div class="o_setting_right_pane">
                             <label for="sale_missing_months_consumption" />
                             <div class="text-muted">
-                                Set ......
                             </div>
                             <field name="sale_missing_months_consumption" />
                         </div>
@@ -62,7 +57,6 @@
                         <div class="o_setting_right_pane">
                             <label for="sale_missing_minimal_consumption" />
                             <div class="text-muted">
-                                Set ......
                             </div>
                             <field name="sale_missing_minimal_consumption" />
                         </div>

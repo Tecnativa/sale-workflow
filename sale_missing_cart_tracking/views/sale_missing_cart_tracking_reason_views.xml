@@ -4,7 +4,7 @@
         <field name="name">sale.missing.tracking.reason.tree</field>
         <field name="model">sale.missing.tracking.reason</field>
         <field name="arch" type="xml">
-            <tree string="Sale missing cart tracking reason">
+            <tree string="Sale missing cart tracking reason" editable="top">
                 <field name="name" />
                 <field name="note" />
                 <field name="recovered" />
@@ -38,7 +38,7 @@
         id="sale_missing_tracking_reason_menu"
         parent="sale_missing_cart_tracking_menu_root"
         action="action_sale_missing_tracking_reason"
-        name="Sale missing cart tracking reason"
+        name="Missing cart tracking reason"
         sequence="30"
         groups="sale_missing_cart_tracking.group_sale_missing_tracking_manager"
     />

@@ -102,12 +102,3 @@ class SaleMissingTrackingWiz(models.TransientModel):
         else:
             action["domain"] = [("id", "in", sale_orders.ids)]
         return action
-
-
-# class SaleMissingTrackingLineWiz(models.TransientModel):
-#     _name = "sale.missing.tracking.line.wiz"
-#     _description = "Sale missing tracking lines wizard"
-#
-#     missing_tracking_wiz_id = fields.Many2one(
-#         comodel_name="sale.missing.tracking.wiz"
-#     )

@@ -15,7 +15,7 @@ class SaleMissingTrackingReason(models.Model):
     _name = "sale.missing.tracking.reason"
     _description = "Sale Missing Cart Tracking Reason"
 
-    name = fields.Char()
+    name = fields.Char(required=True)
     note = fields.Text()
     recovered = fields.Boolean()
 
@@ -27,7 +27,7 @@ class SaleMissingTracking(models.Model):
     _order = "partner_id, date_order desc, id desc"
 
     active = fields.Boolean(default=True)
-    order_id = fields.Many2one(comodel_name="sale.order", string="Sale order")
+    order_id = fields.Many2one(comodel_name="sale.order", string="Sale order", required=True)
     state = fields.Selection(
         [
             ("draft", "Draft"),
@@ -214,3 +214,6 @@ class SaleMissingTracking(models.Model):
                 e.product_id == rec.product_id
             )
         return exceptions
+
+    # def action_update_reason(self):
+    #     self.reason_id = self.env.context.get('reason_id')
