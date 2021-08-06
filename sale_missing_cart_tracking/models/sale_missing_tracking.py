@@ -207,4 +207,10 @@ class SaleMissingTracking(models.Model):
             exceptions.action_approve()
         else:
             exceptions.action_request()
+        # Set exceptions to trackings
+        for rec in self:
+            rec.tracking_exception_ids = exceptions.filtered(
+                lambda e: e.partner_id == rec.partner_id and
+                e.product_id == rec.product_id
+            )
         return exceptions

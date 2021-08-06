@@ -40,5 +40,6 @@
         action="action_sale_missing_tracking_reason"
         name="Sale missing cart tracking reason"
         sequence="30"
+        groups="sale_missing_cart_tracking.group_sale_missing_tracking_manager"
     />
 </odoo>
