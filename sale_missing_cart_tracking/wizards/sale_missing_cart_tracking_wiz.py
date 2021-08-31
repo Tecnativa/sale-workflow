@@ -22,12 +22,6 @@ class SaleMissingTrackingWiz(models.TransientModel):
     )
     has_pending_lines = fields.Boolean(compute="_compute_has_pending_lines")
 
-    # @api.depends("reason_id")
-    # def _compute_missing_tracking_ids(self):
-    #     self.missing_tracking_ids = self.env["sale.missing.tracking"].browse(
-    #         self.env.context.get("sale_missing_tracking_ids")
-    #     )
-
     @api.depends("reason_id")
     def _compute_reason_note(self):
         for rec in self:

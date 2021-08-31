@@ -10,11 +10,6 @@ from odoo import api, fields, models
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    # sale_missing_tracking_ids = fields.One2many(
-    #     comodel_name="sale.missing.tracking",
-    #     inverse_name="order_id",
-    #     ondelete="cascade",
-    # )
     missing_tracking_count = fields.Integer(
         compute="_compute_missing_tracking_count"
     )
@@ -125,7 +120,6 @@ class SaleOrder(models.Model):
             "sale_missing_cart_tracking.action_sale_missing_cart_tracking_wiz"
         ).read()[0]
         action["view_mode"] = "form"
-        # action["context"] = {"sale_missing_tracking_ids": missing_trackings.ids}
         action["res_id"] = wiz.id
         action["flags"] = {
             "withControlPanel": False,
