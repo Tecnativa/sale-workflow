@@ -28,6 +28,7 @@
         "views/sale_missing_cart_tracking_views.xml",
         "views/sale_missing_cart_tracking_reason_views.xml",
         "views/sale_missing_cart_tracking_exception_views.xml",
+        "views/sale_order_views.xml",
         "wizards/sale_missing_cart_tracking_wiz.xml",
     ],
 }

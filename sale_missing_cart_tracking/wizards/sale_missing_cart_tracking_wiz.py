@@ -73,13 +73,11 @@ class SaleMissingTrackingWiz(models.TransientModel):
             max_delay_times = self.env.company.sale_missing_max_delay_times
             for group in groups:
                 if group["__count"] >= max_delay_times:
-                    message += _(
-                        "Product: %s Partner: %s\n"
-                        % (group["product_id"][1], group["partner_id"][1])
-                    )
+                    message += "%s\n" % group["product_id"][1]
             if message:
                 message = (
-                    _("You have pending this missing tracking to set reason\n")
+                    _("You cannot postpone this advice any more times."
+                      "Why doesn't the customer buy these products?\n")
                     + message
                 )
             return message
@@ -94,6 +92,13 @@ class SaleMissingTrackingWiz(models.TransientModel):
             bypass_missing_cart_tracking=True
         ).missing_tracking_ids.mapped("order_id")
         sale_orders.action_confirm()
+        return self.action_open_sale_order(sale_orders)
+
+    def action_open_sale_order(self, sale_orders=None):
+        if sale_orders is None:
+            sale_orders = self.with_context(
+                bypass_missing_cart_tracking=True
+            ).missing_tracking_ids.mapped("order_id")
         action = self.env.ref("sale.action_orders").read()[0]
         if len(sale_orders) == 1:
             view = self.env.ref("sale.view_order_form", False)

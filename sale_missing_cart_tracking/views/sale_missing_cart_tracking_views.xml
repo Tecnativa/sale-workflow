@@ -10,6 +10,7 @@
                 multi_edit="1"
                 create="false"
                 delete="false"
+                editable="top"
             >
                 <field name="partner_id" optional="hide" />
                 <field name="order_id" optional="hide" />
@@ -32,11 +33,11 @@
                 <!--                    type="object"-->
                 <!--                    icon="fa-copy fa-2x"-->
                 <!--                />-->
-                <button
-                    name="action_create_exception"
-                    string="Create exception"
-                    type="object"
-                    icon="fa-exclamation-circle fa-2x"
+                <button name="action_create_exception"
+                string="Create exception"
+                type="object"
+                icon="fa-etsy fa-1x"
+                confirm="Do you want create an exception?"
                 />
             </tree>
         </field>

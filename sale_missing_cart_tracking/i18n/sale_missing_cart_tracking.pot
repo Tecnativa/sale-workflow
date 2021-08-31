@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-06 10:16+0000\n"
-"PO-Revision-Date: 2021-08-06 10:16+0000\n"
+"POT-Creation-Date: 2021-08-31 10:35+0000\n"
+"PO-Revision-Date: 2021-08-31 10:35+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -197,7 +197,7 @@ msgstr ""
 
 #. module: sale_missing_cart_tracking
 #: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.sale_missing_cart_tracking_wiz
-msgid "Delay and Confirm"
+msgid "Delay advice and confirm sale order"
 msgstr ""
 
 #. module: sale_missing_cart_tracking
@@ -206,6 +206,18 @@ msgstr ""
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_missing_tracking_reason__display_name
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_missing_tracking_wiz__display_name
 msgid "Display Name"
+msgstr ""
+
+#. module: sale_missing_cart_tracking
+#: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.view_sale_missing_tracking_tree
+msgid "Do you want create an exception?"
+msgstr ""
+
+#. module: sale_missing_cart_tracking
+#: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.sale_missing_cart_tracking_wiz
+msgid ""
+"Do you want to postpone this advice of                                      "
+"sale missing tracking?"
 msgstr ""
 
 #. module: sale_missing_cart_tracking
@@ -375,6 +387,11 @@ msgid "Missing Tracking"
 msgstr ""
 
 #. module: sale_missing_cart_tracking
+#: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_order__missing_tracking_count
+msgid "Missing Tracking Count"
+msgstr ""
+
+#. module: sale_missing_cart_tracking
 #: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.res_config_settings_view_form_sale
 msgid "Missing cart products tracking"
 msgstr ""
@@ -401,6 +418,7 @@ msgstr ""
 
 #. module: sale_missing_cart_tracking
 #: model:ir.ui.menu,name:sale_missing_cart_tracking.sale_missing_cart_tracking_menu_root
+#: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.view_order_form
 msgid "Missing tracking"
 msgstr ""
 
@@ -544,12 +562,6 @@ msgid "Product Template"
 msgstr ""
 
 #. module: sale_missing_cart_tracking
-#: code:addons/sale_missing_cart_tracking/wizards/sale_missing_cart_tracking_wiz.py:0
-#, python-format
-msgid "Product: %s Partner: %s\n"
-msgstr ""
-
-#. module: sale_missing_cart_tracking
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_missing_tracking__reason_id
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_missing_tracking_exception__reason_id
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_missing_tracking_wiz__reason_id
@@ -570,11 +582,9 @@ msgid "Reason pending"
 msgstr ""
 
 #. module: sale_missing_cart_tracking
-#: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_missing_tracking_reason__recovered
 #: model:ir.model.fields.selection,name:sale_missing_cart_tracking.selection__sale_missing_tracking__state__recovered
 #: model:ir.model.fields.selection,name:sale_missing_cart_tracking.selection__sale_missing_tracking_exception__state__recovered
 #: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.view_sale_missing_tracking_exception_search
-#: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.view_sale_missing_tracking_reason_search
 msgid "Recovered"
 msgstr ""
 
@@ -636,7 +646,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_product_template__sale_missing_tracking
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_res_partner__sale_missing_tracking
 #: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_res_users__sale_missing_tracking
-#: model:ir.model.fields,field_description:sale_missing_cart_tracking.field_sale_order__sale_missing_tracking_ids
 msgid "Sale Missing Tracking"
 msgstr ""
 
@@ -671,6 +680,11 @@ msgstr ""
 #. module: sale_missing_cart_tracking
 #: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.sale_missing_cart_tracking_wiz
 msgid "Sale missing cart tracking wizard"
+msgstr ""
+
+#. module: sale_missing_cart_tracking
+#: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.sale_missing_cart_tracking_wiz
+msgid "Sale missing tracking advice"
 msgstr ""
 
 #. module: sale_missing_cart_tracking
@@ -795,13 +809,7 @@ msgstr ""
 #. module: sale_missing_cart_tracking
 #: code:addons/sale_missing_cart_tracking/wizards/sale_missing_cart_tracking_wiz.py:0
 #, python-format
-msgid "You have pending this missing tracking to set reason\n"
-msgstr ""
-
-#. module: sale_missing_cart_tracking
-#: model_terms:ir.ui.view,arch_db:sale_missing_cart_tracking.sale_missing_cart_tracking_wiz
 msgid ""
-"You have sale missing references without reason."
-"                                      Do you want delay set the reason of "
-"it?"
+"You cannot postpone this advice any more times.Why doesn't the customer buy "
+"these products?\n"
 msgstr ""

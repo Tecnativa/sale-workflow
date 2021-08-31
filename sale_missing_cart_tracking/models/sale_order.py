@@ -10,11 +10,24 @@ from odoo import api, fields, models
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    sale_missing_tracking_ids = fields.One2many(
-        comodel_name="sale.missing.tracking",
-        inverse_name="order_id",
-        ondelete="cascade",
+    # sale_missing_tracking_ids = fields.One2many(
+    #     comodel_name="sale.missing.tracking",
+    #     inverse_name="order_id",
+    #     ondelete="cascade",
+    # )
+    missing_tracking_count = fields.Integer(
+        compute="_compute_missing_tracking_count"
     )
+
+    def _compute_missing_tracking_count(self):
+        groups = self.env["sale.missing.tracking"].sudo().read_group(
+            domain=[("order_id", "in", self.ids)],
+            fields=["order_id"],
+            groupby=["order_id"]
+        )
+        groups_dic = {g["order_id"][0]: g["order_id_count"] for g in groups}
+        for sale_order in self:
+            sale_order.missing_tracking_count = groups_dic.get(sale_order.id, 0)
 
     def _get_missing_exception(self):
         self.ensure_one()
@@ -138,6 +151,12 @@ class SaleOrder(models.Model):
     def action_pending_missing_tracking_reason(self):
         missing_trackings = self.env["sale.missing.tracking"].search(
             [("reason_id", "=", False)]
+        )
+        return self._action_missing_tracking(missing_trackings)
+
+    def action_open_missing_tracking(self):
+        missing_trackings = self.env["sale.missing.tracking"].search(
+            [("order_id", "in", self.ids)]
         )
         return self._action_missing_tracking(missing_trackings)
 
