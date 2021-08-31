@@ -34,10 +34,10 @@ class ResCompany(models.Model):
     sale_missing_months_consumption = fields.Integer(
         string="Months consumption",
         help="Number of months to compute product consumption",
-        default=1000.0,
+        default=12,
     )
     sale_missing_minimal_consumption = fields.Monetary(
         string="Minimal consumption",
         help="Minimal consumption in months consumption",
-        default=12,
+        default=1000.0,
     )

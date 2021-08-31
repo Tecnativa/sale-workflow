@@ -12,6 +12,7 @@
                 delete="false"
                 editable="top"
             >
+                <field name="create_date" optional="show" />
                 <field name="partner_id" optional="hide" />
                 <field name="order_id" optional="hide" />
                 <field name="product_id" />

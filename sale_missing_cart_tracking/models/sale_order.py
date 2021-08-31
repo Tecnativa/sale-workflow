@@ -73,6 +73,7 @@ class SaleOrder(models.Model):
         groups = SaleOrderLine.sudo().read_group(
             domain=[
                 ("product_id", "in", missing_product_ids),
+                ("order_partner_id", "=", self.partner_id.id),
                 (
                     "order_id.date_order",
                     ">=",
@@ -101,11 +102,6 @@ class SaleOrder(models.Model):
                     "order_id": self.id,
                     "product_id": product_id,
                     "consumption": consumption,
-                    # TODO: To remove because these fields when related works
-                    # "partner_id": self.partner_id.id,
-                    # "commercial_partner_id": self.partner_id.commercial_partner_id.id,
-                    # "date_order": self.date_order,
-                    # "user_id": self.user_id.id,
                 }
             )
         missing_tracking = self.env["sale.missing.tracking"].sudo().create(vals_list)
