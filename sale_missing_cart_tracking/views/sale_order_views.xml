@@ -9,7 +9,7 @@
                     <button type="object"
                         name="action_open_missing_tracking"
                         class="oe_stat_button"
-                        icon="fa-truck"
+                        icon="fa-warning"
                         attrs="{'invisible': [('missing_tracking_count', '=', 0)]}" groups="base.group_user">
                         <field name="missing_tracking_count" widget="statinfo" string="Missing tracking"/>
                     </button>

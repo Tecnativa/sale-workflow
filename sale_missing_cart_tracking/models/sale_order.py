@@ -10,81 +10,119 @@ from odoo import api, fields, models
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    missing_tracking_count = fields.Integer(
-        compute="_compute_missing_tracking_count"
-    )
+    missing_tracking_count = fields.Integer(compute="_compute_missing_tracking_count")
 
     def _compute_missing_tracking_count(self):
-        groups = self.env["sale.missing.tracking"].sudo().read_group(
-            domain=[("order_id", "in", self.ids)],
-            fields=["order_id"],
-            groupby=["order_id"]
+        groups = (
+            self.env["sale.missing.tracking"]
+            .sudo()
+            .read_group(
+                domain=[("order_id", "in", self.ids)],
+                fields=["order_id"],
+                groupby=["order_id"],
+            )
         )
         groups_dic = {g["order_id"][0]: g["order_id_count"] for g in groups}
         for sale_order in self:
             sale_order.missing_tracking_count = groups_dic.get(sale_order.id, 0)
 
-    def _get_missing_exception(self):
+    def _get_missing_exception_product_ids(self):
         self.ensure_one()
-        return self.env["sale.missing.tracking.exception"].search(
-            [
-                ("partner_id", "=", self.partner_id.id),
-                ("state", "=", "approved"),
-                ("product_id.sale_missing_tracking", "=", True),
-            ]
+        groups = (
+            self.env["sale.missing.tracking.exception"]
+            .sudo()
+            .read_group(
+                domain=[
+                    ("partner_id", "=", self.partner_id.id),
+                    ("state", "=", "approved"),
+                    ("product_id.sale_missing_tracking", "=", True),
+                ],
+                # Don't works "product_ids:array_agg(distinct(product_id))"
+                fields=["product_ids:array_agg(product_id)"],
+                groupby=[],
+            )
         )
+        return groups[0]["product_ids"] or []
 
-    def _get_missing_product_domain(self):
-        self.ensure_one()
-        now = fields.Datetime.now()
-        missing_product_exception = self._get_missing_exception().mapped("product_id")
-        domain = [
-            ("company_id", "=", self.company_id.id),
-            ("order_partner_id", "=", self.partner_id.id),
-            (
-                "product_id",
-                "not in",
-                (self.order_line.mapped("product_id") + missing_product_exception).ids,
-            ),
-            ("product_id.sale_missing_tracking", "=", True),
-            ("state", "in", ["sale", "done"]),
-            (
-                "order_id.date_order",
-                ">=",
-                now - relativedelta(days=self.company_id.sale_missing_days_from),
-            ),
-            (
-                "order_id.date_order",
-                "<=",
-                now - relativedelta(days=self.company_id.sale_missing_days_to),
-            ),
-        ]
-        return domain
+    def _get_missing_product_ids(self, now):
+        SaleOrderLine = self.env["sale.order.line"]
+        # Get habitual products
+        order_ids = self.search(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("state", "in", ("sale", "done")),
+                ("partner_id", "=", self.partner_id.id),
+                (
+                    "date_order",
+                    ">=",
+                    now - relativedelta(days=self.company_id.sale_missing_days_from),
+                ),
+                (
+                    "date_order",
+                    "<=",
+                    now - relativedelta(days=self.company_id.sale_missing_days_to),
+                ),
+            ]
+        ).ids
+        # Improve performance because "normal domain" search all orders < date_x and
+        # all orders > date_y and add those huge lists to domain (from 2400ms to 270ms)
+        groups = SaleOrderLine.sudo().read_group(
+            domain=[
+                ("product_id.sale_missing_tracking", "=", True),
+                ("order_id", "in", order_ids),
+            ],
+            fields=["product_ids:array_agg(product_id)"],
+            groupby=[],
+        )
+        habitual_product_set = set(groups[0]["product_ids"] or [])
+        # Remove exceptions
+        exception_product_set = set(self._get_missing_exception_product_ids())
+        missing_product_set = habitual_product_set - exception_product_set
+        # Get and remove already sold products
+        groups = SaleOrderLine.sudo().read_group(
+            domain=[
+                ("company_id", "=", self.company_id.id),
+                ("order_partner_id", "=", self.partner_id.id),
+                ("state", "in", ("sale", "done")),
+                ("product_id", "in", tuple(habitual_product_set)),
+                (
+                    "order_id.date_order",
+                    ">",
+                    now - relativedelta(days=self.company_id.sale_missing_days_to),
+                ),
+            ],
+            fields=["product_ids:array_agg(product_id)"],
+            groupby=[],
+        )
+        sold_product_set = set(groups[0]["product_ids"] or [])
+        missing_product_set -= sold_product_set
+        return list(missing_product_set)
 
     def _get_missing_products(self):
         self.ensure_one()
-        SaleOrderLine = self.env["sale.order.line"]
-        groups = SaleOrderLine.sudo().read_group(
-            domain=self._get_missing_product_domain(),
-            fields=["product_id"],
-            groupby=["product_id"],
-        )
-        missing_product_ids = [group["product_id"][0] for group in groups]
-        groups = SaleOrderLine.sudo().read_group(
-            domain=[
-                ("product_id", "in", missing_product_ids),
-                ("order_partner_id", "=", self.partner_id.id),
-                (
-                    "order_id.date_order",
-                    ">=",
-                    fields.Datetime.now()
-                    - relativedelta(
-                        months=self.company_id.sale_missing_months_consumption
+        now = fields.Datetime.now()
+        missing_product_ids = self._get_missing_product_ids(now)
+        groups = (
+            self.env["sale.order.line"]
+            .sudo()
+            .read_group(
+                domain=[
+                    ("company_id", "=", self.company_id.id),
+                    ("order_partner_id", "=", self.partner_id.id),
+                    ("state", "in", ("sale", "done")),
+                    ("product_id", "in", missing_product_ids),
+                    (
+                        "order_id.date_order",
+                        ">=",
+                        now
+                        - relativedelta(
+                            months=self.company_id.sale_missing_months_consumption
+                        ),
                     ),
-                ),
-            ],
-            fields=["product_id", "price_subtotal"],
-            groupby=["product_id"],
+                ],
+                fields=["product_id", "price_subtotal"],
+                groupby=["product_id"],
+            )
         )
         missing_product_dict = {}
         minimal_consumption = self.company_id.sale_missing_minimal_consumption
@@ -151,8 +189,7 @@ class SaleOrder(models.Model):
         return self._action_missing_tracking(missing_trackings)
 
     def action_cancel(self):
-        """ Remove missing tracking linked
-        """
+        """Remove missing tracking linked"""
         res = super().action_cancel()
         trackings = self.env["sale.missing.tracking"].search(
             [("order_id", "in", self.ids)]
