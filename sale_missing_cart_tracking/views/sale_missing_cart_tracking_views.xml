@@ -34,11 +34,12 @@
                 <!--                    type="object"-->
                 <!--                    icon="fa-copy fa-2x"-->
                 <!--                />-->
-                <button name="action_create_exception"
-                string="Create exception"
-                type="object"
-                icon="fa-etsy fa-1x"
-                confirm="Do you want create an exception?"
+                <button
+                    name="action_create_exception"
+                    string="Create exception"
+                    type="object"
+                    icon="fa-etsy fa-1x"
+                    confirm="Do you want create an exception?"
                 />
             </tree>
         </field>

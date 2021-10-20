@@ -26,8 +26,10 @@ class SaleMissingTracking(models.Model):
 
     active = fields.Boolean(default=True)
     order_id = fields.Many2one(
-        comodel_name="sale.order", string="Sale order", required=True,
-        ondelete="cascade"
+        comodel_name="sale.order",
+        string="Sale order",
+        required=True,
+        ondelete="cascade",
     )
     state = fields.Selection(
         [

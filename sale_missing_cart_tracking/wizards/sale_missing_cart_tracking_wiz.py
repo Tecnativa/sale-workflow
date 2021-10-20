@@ -70,8 +70,10 @@ class SaleMissingTrackingWiz(models.TransientModel):
                     message += "%s\n" % group["product_id"][1]
             if message:
                 message = (
-                    _("You cannot postpone this advice any more times."
-                      "Why doesn't the customer buy these products?\n")
+                    _(
+                        "You cannot postpone this advice any more times."
+                        "Why doesn't the customer buy these products?\n"
+                    )
                     + message
                 )
             return message
