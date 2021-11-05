@@ -96,6 +96,7 @@ class SaleMissingTrackingException(models.Model):
         self.date = fields.Datetime.now()
 
     def _update_tracking_state(self, vals):
+        # To avoid rewrite trackings aready in request state
         if vals["state"] == "request":
             states = ["draft"]
         else:

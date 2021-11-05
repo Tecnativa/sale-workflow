@@ -132,6 +132,7 @@ class SaleMissingTracking(models.Model):
         domain = [
             ("date", ">=", date_from),
             ("date", "<=", date_to),
+            ("state", "in", ["draft", "request", "refused"]),
         ]
         missing_groups = self.read_group(
             domain=domain,

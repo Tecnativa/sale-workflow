@@ -83,8 +83,11 @@ class SaleOrder(models.Model):
             domain=[
                 ("company_id", "=", self.company_id.id),
                 ("order_partner_id", "=", self.partner_id.id),
+                "|",
+                ("order_id", "=", self.id),
                 ("state", "in", ("sale", "done")),
                 ("product_id", "in", tuple(habitual_product_set)),
+                ("product_uom_qty", ">", 0.0),
                 (
                     "order_id.date_order",
                     ">",
@@ -161,6 +164,31 @@ class SaleOrder(models.Model):
         action["context"] = {"form_view_initial_mode": "edit"}
         return action
 
+    def recover_missing_tracking(self):
+        for order in self:
+            product_ids = []
+            for line in order.order_line:
+                if line.product_uom_qty > 0.0 and line.product_id.sale_missing_tracking:
+                    product_ids.append(line.product_id.id)
+            to_recover_trackings = self.env["sale.missing.tracking"].search(
+                [
+                    ("partner_id", "=", order.partner_id.id),
+                    ("product_id", "in", product_ids),
+                    ("state", "in", ["draft", "request", "refused"]),
+                    (
+                        "date_order",
+                        "<=",
+                        order.date_order
+                        + relativedelta(days=self.company_id.sale_missing_days_to),
+                    ),
+                ]
+            )
+            to_recover_trackings.write(
+                {
+                    "state": "recovered",
+                }
+            )
+
     def action_confirm(self):
         if not self.env.context.get("bypass_missing_cart_tracking"):
             SaleMissingTracking = self.env["sale.missing.tracking"]
@@ -170,6 +198,7 @@ class SaleOrder(models.Model):
             for order in self:
                 if not order.partner_id.sale_missing_tracking:
                     continue
+                order.recover_missing_tracking()
                 missing_trackings += self._create_missing_cart_tracking()
             if missing_trackings:
                 return self._action_missing_tracking(missing_trackings)
