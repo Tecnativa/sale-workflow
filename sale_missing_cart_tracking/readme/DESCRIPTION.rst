@@ -1,2 +1,2 @@
-This module allows to commercial users register payments in a payment sheet.
-This payment sheet will generate a bank statement when is confirmed.
+This module allows the management of notices when a sales order does not include a
+product that the customer usually buys.

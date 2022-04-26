@@ -2,6 +2,8 @@
 # Copyright 2021 Tecnativa - Sergio Teruel
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from ast import literal_eval
+
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
@@ -99,6 +101,27 @@ class SaleOrder(models.Model):
         )
         sold_product_set = set(groups[0]["product_ids"] or [])
         missing_product_set -= sold_product_set
+        ICP = self.env["ir.config_parameter"].sudo()
+        relativedelta_params = ICP.get_param(
+            "sale_missing_cart_tracking.already_notified_relativedelta_params",
+        )
+        if missing_product_set and relativedelta_params:
+            relativedelta_params = literal_eval(relativedelta_params)
+            already_notified = self.env["sale.missing.tracking"].read_group(
+                domain=[
+                    ("product_id", "in", list(missing_product_set)),
+                    ("user_id", "=", self.user_id.id),
+                    ("partner_id", "=", self.partner_id.id),
+                    (
+                        "date_order",
+                        ">",
+                        fields.Datetime.now() + relativedelta(**relativedelta_params),
+                    ),
+                ],
+                fields=["product_ids:array_agg(product_id)"],
+                groupby=[],
+            )
+            missing_product_set -= set(already_notified[0]["product_ids"] or [])
         return list(missing_product_set)
 
     def _get_missing_products(self):
@@ -183,11 +206,7 @@ class SaleOrder(models.Model):
                     ),
                 ]
             )
-            to_recover_trackings.write(
-                {
-                    "state": "recovered",
-                }
-            )
+            to_recover_trackings.write({"state": "recovered"})
 
     def action_confirm(self):
         if not self.env.context.get("bypass_missing_cart_tracking"):
