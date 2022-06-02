@@ -5,7 +5,8 @@
         <field name="name">User: Team Documents Only</field>
         <field
             name="comment"
-        >The user will have an access to the documents of the sales teams he/she belongs to.</field>
+        >The user will have an access to the documents of the sales teams he/she belongs to.
+        </field>
         <field name="category_id" ref="base.module_category_sales_sales" />
         <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman'))]" />
     </record>
@@ -13,5 +14,6 @@
     <record id="sales_team.group_sale_salesman_all_leads" model="res.groups">
         <field name="implied_ids" eval="[(6, 0, [ref('group_sale_team_manager')])]" />
     </record>
+
 
 </odoo>
