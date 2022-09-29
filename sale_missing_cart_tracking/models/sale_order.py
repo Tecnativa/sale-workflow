@@ -185,6 +185,7 @@ class SaleOrder(models.Model):
             "withControlPanel": False,
         }
         action["context"] = {"form_view_initial_mode": "edit"}
+        action["target"] = "new"
         return action
 
     def recover_missing_tracking(self):

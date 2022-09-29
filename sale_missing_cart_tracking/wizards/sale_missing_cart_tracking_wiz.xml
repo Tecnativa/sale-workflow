@@ -45,7 +45,7 @@
                             string="Cancel"
                             class="oe_link"
                             type="object"
-                            name="action_open_sale_order"
+                            special="cancel"
                         />
                     </footer>
                 </sheet>
