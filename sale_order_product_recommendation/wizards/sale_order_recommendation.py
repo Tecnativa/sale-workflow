@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Copyright 2017 Jairo Llopis <jairo.llopis@tecnativa.com>
 # Copyright 2018 Carlos Dauden <carlos.dauden@tecnativa.com>
 # Copyright 2020 Tecnativa - Pedro M. Baeza
@@ -6,6 +7,17 @@
 
 from odoo import api, fields, models
 from odoo.tests import Form
+
+=======
+# -*- coding: utf-8 -*-
+# Copyright 2017 Jairo Llopis <jairo.llopis@tecnativa.com>
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
+from datetime import datetime, timedelta
+
+from openerp import api, fields, models
+
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
 
 
 class SaleOrderRecommendation(models.TransientModel):
@@ -36,6 +48,7 @@ class SaleOrderRecommendation(models.TransientModel):
         required=True,
         help="The less, the faster they will be found.",
     )
+<<<<<<< HEAD
     last_compute = fields.Char()
     # Get default value from config settings
     sale_recommendation_price_origin = fields.Selection(
@@ -43,11 +56,14 @@ class SaleOrderRecommendation(models.TransientModel):
         string="Product price origin",
         default="pricelist",
     )
+=======
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
 
     @api.model
     def _default_order_id(self):
         return self.env.context.get("active_id", False)
 
+<<<<<<< HEAD
     def _recomendable_sale_order_lines_domain(self):
         """Domain to find recent SO lines."""
         other_sales = self.env["sale.order"].search(
@@ -95,16 +111,46 @@ class SaleOrderRecommendation(models.TransientModel):
             self._recomendable_sale_order_lines_domain(),
             ["product_id", "qty_delivered"],
             ["product_id"],
+=======
+    @api.multi
+    @api.onchange("order_id", "months", "line_amount")
+    def _generate_recommendations(self):
+        """Generate lines according to context sale order."""
+        start = datetime.now() - timedelta(days=self.months * 30)
+        start = fields.Datetime.to_string(start)
+        order_lines = self.order_id.order_line
+        existing_product_ids = set(order_lines.mapped("product_id").ids)
+        self.line_ids = False
+        # Search delivered products in previous months
+        found_lines = self.env["sale.order.line"].read_group(
+            [
+                ("order_partner_id", "child_of",
+                 self.order_id.partner_id.commercial_partner_id.id),
+                ("order_id.date_order", ">=", start),
+                "|", ("qty_delivered", "!=", 0.0),
+                     ("order_id", "=", self.order_id.id),
+            ],
+            ["product_id", "qty_delivered"],
+            ["product_id"],
+            limit=self.line_amount,
+            lazy=False,
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
         )
         # Manual ordering that circumvents ORM limitations
         found_lines = sorted(
             found_lines,
             key=lambda res: (
+<<<<<<< HEAD
                 res["product_id_count"],
+=======
+                res["product_id"][0] in existing_product_ids,
+                res["__count"],
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
                 res["qty_delivered"],
             ),
             reverse=True,
         )
+<<<<<<< HEAD
         found_dict = {product["product_id"][0]: product for product in found_lines}
         recommendation_lines = self.env["sale.order.recommendation.line"]
         existing_product_ids = set()
@@ -163,6 +209,57 @@ class SaleOrderRecommendation(models.TransientModel):
         for index in to_remove:
             order_form.order_line.remove(index)
         order_form.save()
+=======
+        # Add those recommendations too
+        for line in found_lines:
+            new_line = self.env["sale.order.recommendation.line"].new({
+                "product_id": line["product_id"][0],
+                "times_delivered": line["__count"],
+                "units_delivered": line["qty_delivered"],
+            })
+            if new_line.product_id.id in existing_product_ids:
+                new_line.units_included = (
+                    order_lines
+                    .filtered(lambda r: r.product_id == new_line.product_id)
+                    .product_uom_qty)
+            self.line_ids += new_line
+
+    @api.multi
+    def action_accept(self):
+        """Propagate recommendations to sale order."""
+        so_lines = self.env["sale.order.line"]
+        existing_products = self.order_id.mapped("order_line.product_id")
+        for wiz_line in self.line_ids:
+            # Use preexisting line if any
+            if wiz_line.product_id <= existing_products:
+                so_line = self.order_id.order_line.filtered(
+                    lambda r: r.product_id == wiz_line.product_id)
+                # Merge multiple if needed
+                if len(so_line) > 1:
+                    so_line[0].product_uom_qty += sum(
+                        so_line[1:].mapped("product_uom_qty"))
+                    so_line[1:].unlink()
+            # Use a new in-memory line otherwise
+            else:
+                so_line = so_lines.new({
+                    "order_id": self.order_id.id,
+                })
+            # Delete if needed
+            if not wiz_line.units_included:
+                so_line.unlink()
+                continue
+            # Apply changes
+            so_line.update({
+                "name": wiz_line.product_id.display_name,
+                "product_id": wiz_line.product_id.id,
+                "product_uom_qty": wiz_line.units_included,
+                "product_uom": wiz_line.product_id.uom_id.id,
+            })
+            so_line.product_id_change()
+            so_line.product_uom_change()
+            so_lines |= so_line
+        self.order_id.order_line |= so_lines
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
 
 
 class SaleOrderRecommendationLine(models.TransientModel):
@@ -181,6 +278,10 @@ class SaleOrderRecommendationLine(models.TransientModel):
     product_id = fields.Many2one(
         "product.product",
         string="Product",
+<<<<<<< HEAD
+=======
+        readonly=True,
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
     )
     price_unit = fields.Monetary(
         compute="_compute_price_unit",
@@ -203,6 +304,7 @@ class SaleOrderRecommendationLine(models.TransientModel):
         required=True,
         readonly=True,
     )
+<<<<<<< HEAD
     sale_line_id = fields.Many2one(
         comodel_name="sale.order.line",
     )
@@ -283,3 +385,15 @@ class SaleOrderRecommendationLine(models.TransientModel):
             .with_context(prefetch_fields=False)
         )
         return so_line.price_unit or 0.0
+=======
+
+    @api.multi
+    @api.depends("partner_id", "product_id", "pricelist_id", "units_included")
+    def _compute_price_unit(self):
+        for one in self:
+            one.price_unit = one.product_id.with_context(
+                partner=one.partner_id.id,
+                pricelist=one.pricelist_id.id,
+                quantity=one.units_included,
+            ).price
+>>>>>>> [ADD] sale_order_product_recommendation: SO product wizard
