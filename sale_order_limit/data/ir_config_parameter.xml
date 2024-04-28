@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="sale_order_limit_min_amount" model="ir.config_parameter">
+        <field name="key">sale.order.limit_min_amount</field>
+        <field name="value">100</field>
+    </record>
+</odoo>

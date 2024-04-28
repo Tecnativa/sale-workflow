@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="sales_team.res_partner_view_team" />
+        <field name="arch" type="xml">
+            <field name="team_id" position="after">
+                <field name="skip_sale_order_limit" />
+            </field>
+        </field>
+    </record>
+</odoo>
