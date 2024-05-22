@@ -19,10 +19,10 @@ class SaleOrderLine(models.Model):
     def _compute_product_customer_code(self):
         for line in self:
             if line.product_id:
-                supplierinfo = line.product_id._select_customerinfo(
+                customerinfo = line.product_id._select_customerinfo(
                     partner=line.order_partner_id
                 )
-                code = supplierinfo.product_code
+                code = customerinfo.product_code
             else:
                 code = ""
             line.product_customer_code = code
@@ -33,8 +33,10 @@ class SaleOrderLine(models.Model):
         This also takes from context the possible customerinfo already searched in
         product_id_change for avoiding duplicated searches.
         """
-        if "customerinfo" in self.env.context:
-            customerinfo = self.env.context["customerinfo"]
+        if "customerinfo_id" in self.env.context:
+            customerinfo = self.env["product.customerinfo"].browse(
+                self.env.context["customerinfo_id"]
+            )
         else:
             customerinfo = self.product_id._select_customerinfo(
                 partner=self.order_partner_id
@@ -59,7 +61,10 @@ class SaleOrderLine(models.Model):
                     partner=line.order_partner_id
                 )
             super(
-                SaleOrderLine, line.with_context(customerinfo=customerinfo)
+                SaleOrderLine,
+                line.with_context(
+                    customerinfo_id=customerinfo.id if customerinfo else False
+                ),
             ).product_id_change()
             if customerinfo and customerinfo.min_qty:
                 line.product_uom_qty = customerinfo.min_qty
