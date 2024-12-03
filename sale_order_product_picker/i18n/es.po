@@ -329,7 +329,6 @@ msgstr "Precio de venta"
 #. module: sale_order_product_picker
 #: model:ir.ui.menu,name:sale_order_product_picker.menu_email_campaigns
 #, fuzzy
-#| msgid "Commercial Quotations"
 msgid "Salesman Quotations"
 msgstr "Presupuestos (Comerciales)"
 
