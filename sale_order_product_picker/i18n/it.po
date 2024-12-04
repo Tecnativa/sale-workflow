@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-12-20 11:36+0000\n"
+"PO-Revision-Date: 2024-12-04 12:06+0000\n"
 "Last-Translator: mymage <stefano.consolaro@mymage.it>\n"
 "Language-Team: none\n"
 "Language: it\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 5.6.2\n"
 
 #. module: sale_order_product_picker
 #: model_terms:ir.ui.view,arch_db:sale_order_product_picker.view_order_form
@@ -39,6 +39,9 @@ msgid ""
 "                                                                Discount:\n"
 "                                                            </span>"
 msgstr ""
+"<span>\n"
+"                                                                Sconto:\n"
+"                                                            </span>"
 
 #. module: sale_order_product_picker
 #: model_terms:ir.ui.view,arch_db:sale_order_product_picker.view_order_form
@@ -47,11 +50,14 @@ msgid ""
 "                            Discount:\n"
 "                        </span>"
 msgstr ""
+"<span>\n"
+"                            Sconto:\n"
+"                        </span>"
 
 #. module: sale_order_product_picker
 #: model_terms:ir.ui.view,arch_db:sale_order_product_picker.view_order_form
 msgid "<span>%</span>"
-msgstr ""
+msgstr "<span>%</span>"
 
 #. module: sale_order_product_picker
 #: model_terms:ir.ui.view,arch_db:sale_order_product_picker.view_order_form
@@ -59,6 +65,8 @@ msgid ""
 "<span><i class=\"fa fa-exclamation-triangle\"/> Multiple discounts selected</"
 "span>"
 msgstr ""
+"<span><i class=\"fa fa-exclamation-triangle\"/> Selezionati sconti "
+"multipli</span>"
 
 #. module: sale_order_product_picker
 #: model_terms:ir.ui.view,arch_db:sale_order_product_picker.view_order_form
@@ -97,7 +105,7 @@ msgstr "Offerta commerciale"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__compute_price_unit
 msgid "Compute Price Unit"
-msgstr ""
+msgstr "Calcola prezzo unitario"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__create_uid
@@ -127,7 +135,7 @@ msgstr "Consegnata"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__discount
 msgid "Discount (%)"
-msgstr ""
+msgstr "Sconto (%)"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__display_name
@@ -137,7 +145,7 @@ msgstr "Nome visualizzato"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__product_no_variant_attribute_value_ids
 msgid "Extra Values"
-msgstr ""
+msgstr "Valori extra"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order__picker_filter
@@ -204,7 +212,7 @@ msgstr "Ultime vendite"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__line_price_reduce
 msgid "Line Price Reduce"
-msgstr ""
+msgstr "Riduzione prezzo riga"
 
 #. module: sale_order_product_picker
 #: model_terms:ir.ui.view,arch_db:sale_order_product_picker.view_order_form
@@ -214,7 +222,7 @@ msgstr "Gestione filtri prodotto (ricaricare dopo la modifica)"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__multiple_discounts
 msgid "Multiple Discounts"
-msgstr ""
+msgstr "Sconti multipli"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__qty_available
@@ -272,7 +280,7 @@ msgstr "Prezzo di vendita del prodotto al cliente."
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__pricelist_item_id
 msgid "Pricelist Item"
-msgstr ""
+msgstr "Articolo listino prezzi"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__product_id
@@ -329,7 +337,7 @@ msgstr "Cerca prodotto"
 #. module: sale_order_product_picker
 #: model:ir.model,name:sale_order_product_picker.model_ir_config_parameter
 msgid "System Parameter"
-msgstr ""
+msgstr "Parametro di sistema"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__times_delivered
@@ -339,12 +347,12 @@ msgstr "Numero consegne"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__to_process
 msgid "To Process"
-msgstr ""
+msgstr "Da elaborare"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__unit_factor
 msgid "Unit Factor"
-msgstr ""
+msgstr "Fattore unità"
 
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__unit_name
@@ -369,14 +377,14 @@ msgstr "Usa indirizzo consegna"
 #. module: sale_order_product_picker
 #: model:ir.model.fields,field_description:sale_order_product_picker.field_sale_order_picker__warehouse_id
 msgid "Warehouse"
-msgstr ""
+msgstr "Magazzino"
 
 #. module: sale_order_product_picker
 #. odoo-javascript
 #: code:addons/sale_order_product_picker/static/src/form/form_controller.esm.js:0
 #, python-format
 msgid "You must wait for the picker lines to be written"
-msgstr ""
+msgstr "Bisogna attendere la scrittura delle righe prelevatore"
 
 #. module: sale_order_product_picker
 #: model:ir.model,name:sale_order_product_picker.model_sale_order_picker
