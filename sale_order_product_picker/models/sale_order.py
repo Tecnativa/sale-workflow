@@ -62,7 +62,7 @@ class SaleOrder(models.Model):
         # depends of a computed field
         if "sale_order_product_picker" in self.env.registry._init_modules and self.env[
             "ir.default"
-        ].get("sale.order", "use_delivery_address"):
+        ]._get("sale.order", "use_delivery_address"):
             return "partner_shipping_id"
         else:
             return "partner_id"
@@ -143,7 +143,7 @@ class SaleOrder(models.Model):
         domain = self._get_picker_product_domain()
         order = self.picker_order or None
         if self.product_name_search:
-            product_ids = Product._name_search(self.product_name_search, args=domain)
+            product_ids = Product.name_search(name=self.product_name_search, args=domain)
             # Research to sort _name_search ids instead of browse sorted
             if order:
                 product_ids = Product.search(

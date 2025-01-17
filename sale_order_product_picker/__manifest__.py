@@ -4,8 +4,8 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Sale Order Product Picker",
-    "version": "16.0.1.2.0",
-    "development_status": "Beta",
+    "version": "18.0.1.0.0",
+    "development_status": "Production/Stable",
     "category": "Sale",
     "website": "https://github.com/OCA/sale-workflow",
     "author": "Tecnativa, Odoo Community Association (OCA)",
@@ -28,4 +28,5 @@
             "sale_order_product_picker/static/src/scss/picker.scss",
         ],
     },
+    "maintainers": ["CarlosRoca13", "carlosdauden"]
 }

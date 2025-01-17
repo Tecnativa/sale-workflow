@@ -7,9 +7,9 @@ import {patch} from "@web/core/utils/patch";
 import {FormController} from "@web/views/form/form_controller";
 import {useService} from "@web/core/utils/hooks";
 
-patch(FormController.prototype, "sale_order_product_picker.FormController", {
+patch(FormController.prototype, {
     setup() {
-        this._super(...arguments);
+        super.setup(...arguments);
         this.notification = useService("notification");
     },
     checkIsProcessingPicker() {
@@ -34,12 +34,12 @@ patch(FormController.prototype, "sale_order_product_picker.FormController", {
         if (this.checkIsProcessingPicker()) {
             return Promise.reject();
         }
-        return this._super(...arguments);
+        return super.beforeLeave(...arguments);
     },
     async saveButtonClicked() {
         if (this.checkIsProcessingPicker()) {
             return Promise.reject();
         }
-        return this._super(...arguments);
+        return super.saveButtonClicked(...arguments);
     },
 });

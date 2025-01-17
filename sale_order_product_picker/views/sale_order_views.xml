@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='order_line']" position="attributes">
                 <attribute name="mode">kanban</attribute>
             </xpath>
-            <xpath expr="//field[@name='order_line']//tree" position="attributes">
+            <xpath expr="//field[@name='order_line']//list" position="attributes">
                 <attribute name="limit">200</attribute>
                 <attribute name="editable" />
             </xpath>
@@ -17,7 +17,7 @@
                 <attribute name="limit">200</attribute>
             </xpath>
             <xpath
-                expr="//field[@name='order_line']//tree//field[@name='product_id']"
+                expr="//field[@name='order_line']//list//field[@name='product_id']"
                 position="attributes"
             >
                 <attribute
@@ -97,7 +97,7 @@
                 <attribute name="class" add="oe_inline" separator=" " />
             </xpath>
             <xpath
-                expr="//field[@name='order_line']/kanban//field[@name='company_id']"
+                expr="//field[@name='order_line']/kanban//field[@name='currency_id']"
                 position="after"
             >
                 <field name="move_ids" />
@@ -113,7 +113,8 @@
                 <field name="state" />
                 <field name="is_different_price" />
                 <field name="list_price" />
-                <field name="price_reduce" />
+                <field name="price_reduce_taxexcl" />
+                <field name="price_reduce_taxinc" />
                 <field name="discount" />
                 <field
                     name="product_packaging_id"
@@ -125,7 +126,7 @@
                 />
             </xpath>
             <xpath
-                expr="//field[@name='order_line']/kanban//t[@t-out='record.price_unit.value']/.."
+                expr="//field[@name='order_line']/kanban//field[@name='price_unit']/.."
                 position="attributes"
             >
                 <attribute name="class" add="price_picker" separator=" " />
@@ -134,38 +135,17 @@
                 expr="//field[@name='order_line']/form//field[@name='price_unit']"
                 position="after"
             >
-                <field name="price_reduce" invisible="1" />
+                <field name="price_reduce_taxexcl" invisible="1" />
+                <field name="price_reduce_taxinc" invisible="1" />
             </xpath>
             <xpath
-                expr="//field[@name='order_line']/kanban//t[@t-out='record.price_unit.value']"
+                expr="//field[@name='order_line']/kanban//field[@name='price_unit']"
                 position="after"
             >
                 <div t-if="record.is_different_price.raw_value" class="text-muted">
                     <field name="list_price" widget="monetary" />
                 </div>
             </xpath>
-            <xpath
-                expr="//field[@name='order_line']/kanban//t[@t-out='record.price_unit.value']/../.."
-                position="after"
-            >
-                <div
-                    class="row"
-                    groups="product.group_discount_per_so_line"
-                    t-if="record.discount.raw_value"
-                >
-                    <div class="col-12 text-muted">
-                        <span>
-                            Discount:
-                        </span>
-                        <field name="discount" widget="product_discount" />
-                        <span>%</span>
-                    </div>
-                </div>
-            </xpath>
-            <xpath
-                expr="//field[@name='order_line']/kanban//img[@t-att-title='record.product_id.value']/.."
-                position="inside"
-            />
             <xpath expr="//page[@name='order_lines']" position="before">
                 <page name="picker" string="Picker" class="oe_edit_only picker-tab">
                     <div class="d-flex oe_edit_only">
@@ -270,179 +250,175 @@
                             <field name="compute_price_unit" />
                             <field name="unit_factor" />
                             <templates>
-                                <t t-name="kanban-box">
-                                    <div class="oe_kanban_card oe_kanban_global_click">
-                                        <t>
-                                            <div class="row no-gutters">
-                                                <div
-                                                    class="col-2"
-                                                    style="padding-right: 0;"
-                                                >
-                                                    <img
-                                                        t-att-src="kanban_image('product.product', 'image_128', record.product_id.raw_value)"
-                                                        t-att-title="record.product_id.value"
-                                                        t-att-alt="record.product_id.value"
-                                                        style="max-width: 100%;"
-                                                        class="o_picker_img_full_size"
+                                <t t-name="card">
+                                    <div class="row no-gutters">
+                                        <div
+                                            class="col-2"
+                                            style="padding-right: 0;"
+                                        >
+                                            <img
+                                                t-att-src="kanban_image('product.product', 'image_128', record.product_id.raw_value)"
+                                                t-att-title="record.product_id.value"
+                                                t-att-alt="record.product_id.value"
+                                                style="max-width: 100%;"
+                                                class="o_picker_img_full_size"
+                                            />
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <strong
+                                                        t-if="record.to_process.raw_value"
+                                                        t-esc="record.product_id.value"
+                                                        class="text-info"
+                                                        id="picker_processing"
+                                                    />
+                                                    <strong
+                                                        t-elif="record.is_in_order.raw_value"
+                                                        t-esc="record.product_id.value"
+                                                        class="text-success"
+                                                    />
+                                                    <strong
+                                                        t-else=""
+                                                        t-esc="record.product_id.value"
                                                     />
                                                 </div>
-                                                <div class="col-7">
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <strong
-                                                                t-if="record.to_process.raw_value"
-                                                                t-esc="record.product_id.value"
-                                                                class="text-info"
-                                                                id="picker_processing"
-                                                            />
-                                                            <strong
-                                                                t-elif="record.is_in_order.raw_value"
-                                                                t-esc="record.product_id.value"
-                                                                class="text-success"
-                                                            />
-                                                            <strong
-                                                                t-else=""
-                                                                t-esc="record.product_id.value"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-6">
-                                                            <span class="text-muted">
-                                                                Quantity:
-                                                            </span>
-                                                            <span
-                                                                t-attf-class="#{record.product_uom_qty.raw_value ? 'font-weight-bold' : 'text-muted'}"
-                                                            >
-                                                                <field
-                                                                    name="product_uom_qty"
-                                                                />
-                                                            </span>
-                                                        </div>
-                                                        <div class="col-6 text-muted">
-                                                            <i
-                                                                t-attf-class="#{record.qty_available.raw_value &gt; 0 ? 'text-success' : 'text-danger'} fa fa-area-chart"
-                                                                title=""
-                                                            />
-                                                            <field
-                                                                t-if="record.qty_available.raw_value"
-                                                                name="qty_available"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div
-                                                            class="col-12 font-weight-bold price_picker"
-                                                        >
-                                                            <div>
-                                                                <field
-                                                                    name="line_price_reduce"
-                                                                    widget="monetary"
-                                                                />
-                                                            </div>
-                                                            <div
-                                                                t-if="record.is_different_price.raw_value"
-                                                                class="text-muted"
-                                                            >
-                                                                <field
-                                                                    name="list_price"
-                                                                    widget="monetary"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        class="row"
-                                                        groups="product.group_discount_per_so_line"
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <span class="text-muted">
+                                                        Quantity:
+                                                    </span>
+                                                    <span
+                                                        t-attf-class="#{record.product_uom_qty.raw_value ? 'font-weight-bold' : 'text-muted'}"
                                                     >
-                                                        <div
-                                                            class="col-12 text-muted"
-                                                            t-if="record.discount.raw_value &amp;&amp; !record.multiple_discounts.raw_value"
-                                                        >
-                                                            <field
-                                                                name="price_unit"
-                                                                widget="monetary"
-                                                            />
-                                                            <span>
-                                                                Discount:
-                                                            </span>
-                                                            <field
-                                                                name="discount"
-                                                                widget="product_discount"
-                                                            />
-                                                            <span>%</span>
-                                                        </div>
-                                                        <div
-                                                            class="col-12 text-warning"
-                                                            t-elif="record.multiple_discounts.raw_value"
-                                                        >
-                                                            <span><i
-                                                                class="fa fa-exclamation-triangle"
-                                                            /> Multiple discounts selected</span>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        class="row"
-                                                        t-if="record.times_delivered.raw_value"
-                                                    >
-                                                        <div class="col-12 text-muted">
-                                                            Previous delivered: <field
-                                                            name="times_delivered"
+                                                        <field
+                                                            name="product_uom_qty"
                                                         />
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div
-                                                            class="col-12 text-muted"
-                                                        />
-                                                    </div>
+                                                    </span>
                                                 </div>
-                                                <div class="col-3">
-                                                    <div class="row mb-3">
-                                                        <div
-                                                            class="col-12"
-                                                            style="padding-left:0px"
-                                                        >
-                                                            <a
-                                                                role="button"
-                                                                class="btn btn-primary o_picker_quick_add w-100"
-                                                                style="padding-left:0px; padding-right:0px;"
-                                                            >
-                                                                <strong
-                                                                    style="font-size: 1.2em"
-                                                                >+1
-                                                                </strong>
-                                                                <strong
-                                                                    style="font-size: 0.8em"
-                                                                >
-                                                                    <field
-                                                                        name="unit_name"
-                                                                    />
-                                                                </strong>
-                                                            </a>
-                                                        </div>
+                                                <div class="col-6 text-muted">
+                                                    <i
+                                                        t-attf-class="#{record.qty_available.raw_value &gt; 0 ? 'text-success' : 'text-danger'} fa fa-area-chart"
+                                                        title="Qty. available"
+                                                    />
+                                                    <field
+                                                        t-if="record.qty_available.raw_value"
+                                                        name="qty_available"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div
+                                                    class="col-12 font-weight-bold price_picker"
+                                                >
+                                                    <div>
+                                                        <field
+                                                            name="line_price_reduce"
+                                                            widget="monetary"
+                                                        />
                                                     </div>
-                                                    <div class="row">
-                                                        <div
-                                                            class="col-12"
-                                                            style="padding-left:0px"
-                                                        >
-                                                            <a
-                                                                role="button"
-                                                                class="btn btn-secondary o_picker_form_add w-100"
-                                                                style="padding-left:0px; padding-right:0px;"
-                                                                t-if="record.is_in_order.raw_value"
-                                                            >
-                                                                <i
-                                                                    class="fa fa-files-o"
-                                                                    title="Add new line"
-                                                                />
-                                                            </a>
-                                                        </div>
+                                                    <div
+                                                        t-if="record.is_different_price.raw_value"
+                                                        class="text-muted"
+                                                    >
+                                                        <field
+                                                            name="list_price"
+                                                            widget="monetary"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
-                                        </t>
+                                            <div
+                                                class="row"
+                                                groups="sale.group_discount_per_so_line"
+                                            >
+                                                <div
+                                                    class="col-12 text-muted"
+                                                    t-if="record.discount.raw_value &amp;&amp; !record.multiple_discounts.raw_value"
+                                                >
+                                                    <field
+                                                        name="price_unit"
+                                                        widget="monetary"
+                                                    />
+                                                    <span>
+                                                        Discount:
+                                                    </span>
+                                                    <field
+                                                        name="discount"
+                                                        widget="product_discount"
+                                                    />
+                                                    <span>%</span>
+                                                </div>
+                                                <div
+                                                    class="col-12 text-warning"
+                                                    t-elif="record.multiple_discounts.raw_value"
+                                                >
+                                                    <span><i
+                                                        class="fa fa-exclamation-triangle"
+                                                    /> Multiple discounts selected</span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="row"
+                                                t-if="record.times_delivered.raw_value"
+                                            >
+                                                <div class="col-12 text-muted">
+                                                    Previous delivered: <field
+                                                    name="times_delivered"
+                                                />
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div
+                                                    class="col-12 text-muted"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row mb-3">
+                                                <div
+                                                    class="col-12"
+                                                    style="padding-left:0px"
+                                                >
+                                                    <a
+                                                        role="button"
+                                                        class="btn btn-primary o_picker_quick_add w-100"
+                                                        style="padding-left:0px; padding-right:0px;"
+                                                    >
+                                                        <strong
+                                                            style="font-size: 1.2em"
+                                                        >+1
+                                                        </strong>
+                                                        <strong
+                                                            style="font-size: 0.8em"
+                                                        >
+                                                            <field
+                                                                name="unit_name"
+                                                            />
+                                                        </strong>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div
+                                                    class="col-12"
+                                                    style="padding-left:0px"
+                                                >
+                                                    <a
+                                                        role="button"
+                                                        class="btn btn-secondary o_picker_form_add w-100"
+                                                        style="padding-left:0px; padding-right:0px;"
+                                                        t-if="record.is_in_order.raw_value"
+                                                    >
+                                                        <i
+                                                            class="fa fa-files-o"
+                                                            title="Add new line"
+                                                        />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </t>
                             </templates>
@@ -455,11 +431,11 @@
     <record id="action_open_picker_views" model="ir.actions.act_window">
         <field name="name">Commercial Quotations</field>
         <field name="res_model">sale.order</field>
-        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity</field>
         <field
             name="view_ids"
             eval="[(5, 0, 0),
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('sale.view_quotation_tree')}),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('sale.view_quotation_tree')}),
                 (0, 0, {'view_mode': 'form', 'view_id': ref('view_order_form')})]"
         />
     </record>

@@ -4,8 +4,8 @@
 from odoo import SUPERUSER_ID, api
 
 
-def _post_init_hook(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
+def _post_init_hook(env):
+    # env = api.Environment(cr, SUPERUSER_ID, {})
     ICP = env["ir.config_parameter"]
     previous_value = ICP.get_param("sale_planner_calendar.action_open_sale_order")
     if previous_value:
@@ -18,8 +18,8 @@ def _post_init_hook(cr, registry):
     )
 
 
-def _uninstall_hook(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
+def _uninstall_hook(env):
+    # env = api.Environment(cr, SUPERUSER_ID, {})
     ICP = env["ir.config_parameter"]
     previous_value = ICP.get_param("sale_planner_calendar.action_open_sale_order_bak")
     if previous_value:

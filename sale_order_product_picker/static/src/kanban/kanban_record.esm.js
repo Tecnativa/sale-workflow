@@ -48,9 +48,9 @@ PickerMultiLineDialog.template = xml`
     </div>
 </Dialog>`;
 
-patch(KanbanRecord.prototype, "sale_order_product_picker.KanbanRecord", {
+patch(KanbanRecord.prototype, {
     setup() {
-        this._super(...arguments);
+        super.setup(...arguments);
         this.dialogs = useService("dialog");
         this.disableGlobalClick = false;
         this.orm = useService("orm");
@@ -85,25 +85,25 @@ patch(KanbanRecord.prototype, "sale_order_product_picker.KanbanRecord", {
      * @private
      */
     async onGlobalClick(ev) {
-        var $kanban = $(ev.currentTarget).closest(".o_picker_kanban");
-        if (this.disableGlobalClick || $kanban.find("#processing_picker").length) {
+        var kanban = ev.currentTarget.closest(".o_picker_kanban");
+        if (this.disableGlobalClick || kanban && kanban.querySelector("#processing_picker")) {
             return;
         }
-        if ($(ev.target).closest(".o_picker_quick_add").length) {
+        if (ev.target.closest(".o_picker_quick_add")) {
             // Quick add clicked
             this._onQuickAddClicked();
-        } else if ($(ev.target).closest(".o_picker_form_add").length) {
+        } else if (ev.target.closest(".o_picker_form_add")) {
             // Duplicate line clicked
             this._onFormAddClicked();
-        } else if ($(ev.target).closest(".o_picker_img_full_size").length) {
+        } else if (ev.target.closest(".o_picker_img_full_size")) {
             // Open image clicked
             this._openImageFullResolution();
-        } else if ($kanban.length) {
+        } else if (kanban) {
             // General click
             this._openRecordPickerForm();
         } else {
             // Normal sequence
-            this._super.apply(this, arguments);
+            super.onGlobalClick(...arguments);
         }
     },
     /**
@@ -113,6 +113,7 @@ patch(KanbanRecord.prototype, "sale_order_product_picker.KanbanRecord", {
      */
     async _openRecordPickerForm() {
         const {openRecord, record} = this.props;
+        debugger
         if (record.data.to_process) {
             return;
         }
@@ -147,7 +148,7 @@ patch(KanbanRecord.prototype, "sale_order_product_picker.KanbanRecord", {
             this._openMultiLineModalPicker(x2mList, orderLines);
         } else {
             if (!x2mList.pickerChangeProcessor) {
-                const $pickerKanban = $(this.__owl__.parent.refs.root);
+                const pickerKanban = this.__owl__.parent.refs.root;
                 const delay = await this.orm.call(
                     "ir.config_parameter",
                     "get_picker_delay"
@@ -155,7 +156,7 @@ patch(KanbanRecord.prototype, "sale_order_product_picker.KanbanRecord", {
                 x2mList.pickerChangeProcessor = new PickerChangeProcessor(
                     delay,
                     x2mList,
-                    $pickerKanban
+                    pickerKanban
                 );
             }
             record.update({
@@ -163,7 +164,7 @@ patch(KanbanRecord.prototype, "sale_order_product_picker.KanbanRecord", {
                 to_process: true,
             });
             x2mList.pickerChangeProcessor.addChange({
-                id: record.__bm_handle__,
+                id: record.id,
                 orderLines: orderLines,
                 pickerRecord: record,
                 ctx,

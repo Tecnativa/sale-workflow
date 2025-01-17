@@ -109,7 +109,7 @@ class SaleOrderPicker(models.Model):
             if line.sale_line_id:
                 line.price_unit = line.sale_line_id.price_unit
                 line.discount = line.sale_line_id.discount
-                line.line_price_reduce = line.sale_line_id.price_reduce
+                line.line_price_reduce = line.sale_line_id.price_reduce_taxinc if line.sale_line_id.tax_id.price_include else line.sale_line_id.price_reduce_taxexcl
             elif price_origin == "last_sale_price":
                 (
                     line.price_unit,
@@ -128,7 +128,7 @@ class SaleOrderPicker(models.Model):
         discount_to_apply = 0.0
         new_list_price = 0.0
         price = self._get_pricelist_price()
-        if self.order_id.pricelist_id.discount_policy == "without_discount":
+        if not self.pricelist_item_id._show_discount():
             new_list_price = self._get_pricelist_price_before_discount()
             if new_list_price != 0:
                 discount = (new_list_price - price) / new_list_price * 100
@@ -177,11 +177,10 @@ class SaleOrderPicker(models.Model):
         uom = self.uom_id or self.product_id.uom_id
         if pricelist_rule:
             pricelist_item = pricelist_rule
-            if pricelist_item.pricelist_id.discount_policy == "without_discount":
+            if not pricelist_item._show_discount():
                 while (
                     pricelist_item.base == "pricelist"
-                    and pricelist_item.base_pricelist_id.discount_policy
-                    == "without_discount"
+                    and not pricelist_item._show_discount()
                 ):
                     rule_id = pricelist_item.base_pricelist_id._get_product_rule(
                         product, qty, uom=uom, date=order_date
@@ -193,7 +192,7 @@ class SaleOrderPicker(models.Model):
             qty,
             uom,
             order_date,
-            target_currency=self.currency_id,
+            self.currency_id,
         )
 
     @api.model
@@ -287,7 +286,8 @@ class SaleOrderPicker(models.Model):
             )
             .with_context(prefetch_fields=False)
         )
-        return so_line.price_unit, so_line.discount, so_line.price_reduce
+        price_reduce = so_line.price_reduce_taxinc if so_line.tax_id.price_include else so_line.price_reduce_taxexcl
+        return so_line.price_unit, so_line.discount, price_reduce
 
     def add_to_cart(self):
         self.ensure_one()
