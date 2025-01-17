@@ -80,9 +80,7 @@ class SaleOrderPicker(models.Model):
             if not line.product_no_variant_attribute_value_ids:
                 continue
             prod = line.product_id.product_tmpl_id
-            valid_values = (
-                prod.valid_product_template_attribute_line_ids.product_template_value_ids
-            )
+            valid_values = prod.valid_product_template_attribute_line_ids.product_template_value_ids
             for ptav in line.product_no_variant_attribute_value_ids:
                 if ptav._origin not in valid_values:
                     line.product_no_variant_attribute_value_ids -= ptav

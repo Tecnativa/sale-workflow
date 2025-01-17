@@ -17,19 +17,19 @@ Sale Order Product Picker
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fsale--workflow-lightgray.png?logo=github
-    :target: https://github.com/OCA/sale-workflow/tree/16.0/sale_order_product_picker
+    :target: https://github.com/OCA/sale-workflow/tree/18.0/sale_order_product_picker
     :alt: OCA/sale-workflow
 .. |badge4| image:: https://img.shields.io/badge/weblate-Translate%20me-F47D42.png
-    :target: https://translation.odoo-community.org/projects/sale-workflow-16-0/sale-workflow-16-0-sale_order_product_picker
+    :target: https://translation.odoo-community.org/projects/sale-workflow-18-0/sale-workflow-18-0-sale_order_product_picker
     :alt: Translate me on Weblate
 .. |badge5| image:: https://img.shields.io/badge/runboat-Try%20me-875A7B.png
-    :target: https://runboat.odoo-community.org/builds?repo=OCA/sale-workflow&target_branch=16.0
+    :target: https://runboat.odoo-community.org/builds?repo=OCA/sale-workflow&target_branch=18.0
     :alt: Try me on Runboat
 
 |badge1| |badge2| |badge3| |badge4| |badge5|
 
-This module adds a simply way for salesmen to create/update/delete lines of a sale
-order.
+This module adds a simply way for salesmen to create/update/delete lines
+of a sale order.
 
 **Table of contents**
 
@@ -39,73 +39,81 @@ order.
 Configuration
 =============
 
-The default behavior is get last sales and last price from partner_id field,
-but partner_delivery_address can be used by following these steps:
+The default behavior is get last sales and last price from partner_id
+field, but partner_delivery_address can be used by following these
+steps:
 
-* Create user default value with field **use_delivery_address** of *sale.order*
-  model with **true** value.
-* Another option is extend view to show *use_delivery_address* field and allow that
-  user select this option in each sale order.
+-  Create user default value with field **use_delivery_address** of
+   *sale.order* model with **true** value.
+-  Another option is extend view to show *use_delivery_address* field
+   and allow that user select this option in each sale order.
 
-The default behavior is to **display 40 records**, but it can be configured by
-following these steps:
+The default behavior is to **display 40 records**, but it can be
+configured by following these steps:
 
-* Activate developer mode.
-* Go to *Settings > Technical > Parameters > System Parameters*.
-* Locate the setting with key
-  **sale_order_product_picker.product_picker_limit**
-  or create a new one if not exists.
-* Set desired number of records
+-  Activate developer mode.
+-  Go to *Settings > Technical > Parameters > System Parameters*.
+-  Locate the setting with key
+   **sale_order_product_picker.product_picker_limit** or create a new
+   one if not exists.
+-  Set desired number of records
 
-The default behavior is to display **qty_available**,
-but it can be configured by following these steps:
+The default behavior is to display **qty_available**, but it can be
+configured by following these steps:
 
-* Activate developer mode.
-* Go to *Settings > Technical > Parameters > System Parameters*.
-* Locate the setting with key
-  **sale_order_product_picker.product_available_field**
-  or create a new one if not exists.
-* Set desired availability field (**virtual_available**, **free_qty**)
+-  Activate developer mode.
+-  Go to *Settings > Technical > Parameters > System Parameters*.
+-  Locate the setting with key
+   **sale_order_product_picker.product_available_field** or create a new
+   one if not exists.
+-  Set desired availability field (**virtual_available**, **free_qty**)
 
-When available field is **virtual_available** the default behavior is take into account
-moves to commitment date or today at exactly time, but it can be configured by following
-these steps:
+When available field is **virtual_available** the default behavior is
+take into account moves to commitment date or today at exactly time, but
+it can be configured by following these steps:
 
-* Activate developer mode.
-* Go to *Settings > Technical > Parameters > System Parameters*.
-* Locate the setting with key
-  **sale_order_product_picker.product_virtual_available_time**
-  or create a new one if not exists.
-* Set desired time to be used in available quantities compute (Example: **23:59**)
+-  Activate developer mode.
+-  Go to *Settings > Technical > Parameters > System Parameters*.
+-  Locate the setting with key
+   **sale_order_product_picker.product_virtual_available_time** or
+   create a new one if not exists.
+-  Set desired time to be used in available quantities compute (Example:
+   **23:59**)
 
-**ATTENTION**: **product_virtual_available_time** is a technical parameter and the value must be set
-in server timezone
+**ATTENTION**: **product_virtual_available_time** is a technical
+parameter and the value must be set in server timezone
 
-Installation of this module sets *sale_planner_calendar.action_open_sale_order*
-system parameter as **sale_order_product_picker.action_open_picker_views** to show
-new picker view from sale calendar planner.
+Installation of this module sets
+*sale_planner_calendar.action_open_sale_order* system parameter as
+**sale_order_product_picker.action_open_picker_views** to show new
+picker view from sale calendar planner.
 
-When the +1 button is used, the changes are added to a processing queue. By default, 
-this queue is processed after one second, but this can be changed by using the system 
-parameter **sale_order_product_picker.delay** and setting the number of seconds to 
+When the +1 button is used, the changes are added to a processing queue.
+By default, this queue is processed after one second, but this can be
+changed by using the system parameter
+**sale_order_product_picker.delay** and setting the number of seconds to
 wait before writing the lines.
 
 Usage
 =====
 
-#. Go to *Sales > Orders > Salesman Quotations*
+1. Go to *Sales > Orders > Salesman Quotations*
 
-   * Create or edit an order.
-   * On page Picker you can search for products.
-   * You can:
-      * Add a line by clicking on +1 button.
-      * Add/edit/delete a line by clicking the kanban card.
-      * Show image on fullscreen by clicking it.
+   -  Create or edit an order.
+
+   -  On page Picker you can search for products.
+
+   -  You can:
+
+      -  Add a line by clicking on +1 button.
+      -  Add/edit/delete a line by clicking the kanban card.
+      -  Show image on fullscreen by clicking it.
 
 On next gif you can see the options mentioned:
 
-.. figure:: https://raw.githubusercontent.com/OCA/sale-workflow/16.0/sale_order_product_picker/static/image/picker.gif
-   :alt: Picker
+|image1|
+
+.. |image1| image:: https://raw.githubusercontent.com/OCA/sale-workflow/18.0/sale_order_product_picker/static/image/picker.gif
 
 Bug Tracker
 ===========
@@ -113,7 +121,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/OCA/sale-workflow/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us to smash it by providing a detailed and welcomed
-`feedback <https://github.com/OCA/sale-workflow/issues/new?body=module:%20sale_order_product_picker%0Aversion:%2016.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/OCA/sale-workflow/issues/new?body=module:%20sale_order_product_picker%0Aversion:%2018.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -121,21 +129,21 @@ Credits
 =======
 
 Authors
-~~~~~~~
+-------
 
 * Tecnativa
 
 Contributors
-~~~~~~~~~~~~
+------------
 
-* `Tecnativa <https://www.tecnativa.com>`_:
+-  `Tecnativa <https://www.tecnativa.com>`__:
 
-  * Sergio Teruel
-  * Carlos Dauden
-  * Carlos Roca
+   -  Sergio Teruel
+   -  Carlos Dauden
+   -  Carlos Roca
 
 Maintainers
-~~~~~~~~~~~
+-----------
 
 This module is maintained by the OCA.
 
@@ -147,6 +155,6 @@ OCA, or the Odoo Community Association, is a nonprofit organization whose
 mission is to support the collaborative development of Odoo features and
 promote its widespread use.
 
-This module is part of the `OCA/sale-workflow <https://github.com/OCA/sale-workflow/tree/16.0/sale_order_product_picker>`_ project on GitHub.
+This module is part of the `OCA/sale-workflow <https://github.com/OCA/sale-workflow/tree/18.0/sale_order_product_picker>`_ project on GitHub.
 
 You are welcome to contribute. To learn how please visit https://odoo-community.org/page/Contribute.

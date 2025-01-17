@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-
     <record id="view_order_form" model="ir.ui.view">
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
@@ -34,69 +33,69 @@
                 >{'readonly': [['product_id', "!=", False]]}</attribute>
                 <attribute name="on_change">1</attribute>
             </xpath>
-        <xpath
+            <xpath
                 expr="//field[@name='order_line']//form//div[@name='invoice_lines']"
                 position="attributes"
             >
                 <attribute name="attrs">{'invisible': [(1, '=', 1)]}</attribute>
-        </xpath>
-        <xpath
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']//form//field[@name='tax_id']"
                 position="attributes"
             >
                 <attribute name="invisible">1</attribute>
-        </xpath>
-        <xpath
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']//form//field[@name='product_uom_qty']"
                 position="attributes"
             >
-            <attribute name="widget">numeric_step</attribute>
-            <attribute name="options">{'auto_select': True}</attribute>
-        </xpath>
-        <xpath
+                <attribute name="widget">numeric_step</attribute>
+                <attribute name="options">{'auto_select': True}</attribute>
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']//form//field[@name='price_unit']"
                 position="attributes"
             >
-            <attribute name="widget">numeric_step</attribute>
-            <attribute name="options">{'auto_select': True}</attribute>
-        </xpath>
-        <xpath
+                <attribute name="widget">numeric_step</attribute>
+                <attribute name="options">{'auto_select': True}</attribute>
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']//form//field[@name='discount']"
                 position="attributes"
             >
-            <attribute name="widget">numeric_step</attribute>
-            <attribute name="options">{'auto_select': True}</attribute>
-        </xpath>
-        <xpath
+                <attribute name="widget">numeric_step</attribute>
+                <attribute name="options">{'auto_select': True}</attribute>
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']/form//field[@name='price_unit']"
                 position="before"
             >
-            <label for="price_unit" />
-            <div class="price_picker">
-                <field name="is_different_price" invisible="1" />
-                <field
+                <label for="price_unit" />
+                <div class="price_picker">
+                    <field name="is_different_price" invisible="1" />
+                    <field
                         name="list_price"
                         widget="monetary"
                         class="oe_inline"
                         attrs="{'invisible': [('is_different_price', '=', False)]}"
                     />
-            </div>
-        </xpath>
-        <xpath
+                </div>
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']/form//field[@name='list_price']"
                 position="before"
             >
-            <xpath
+                <xpath
                     expr="//field[@name='order_line']/form//field[@name='price_unit']"
                     position="move"
                 />
-        </xpath>
-        <xpath
+            </xpath>
+            <xpath
                 expr="//field[@name='order_line']/form//field[@name='list_price']"
                 position="attributes"
             >
-            <attribute name="class" add="oe_inline" separator=" " />
-        </xpath>
+                <attribute name="class" add="oe_inline" separator=" " />
+            </xpath>
             <xpath
                 expr="//field[@name='order_line']/kanban//field[@name='company_id']"
                 position="after"
@@ -166,8 +165,7 @@
             <xpath
                 expr="//field[@name='order_line']/kanban//img[@t-att-title='record.product_id.value']/.."
                 position="inside"
-            >
-            </xpath>
+            />
             <xpath expr="//page[@name='order_lines']" position="before">
                 <page name="picker" string="Picker" class="oe_edit_only picker-tab">
                     <div class="d-flex oe_edit_only">
@@ -206,35 +204,35 @@
                         </div>
                     </div>
                     <div class="d-flex oe_edit_only">
-                            <label
+                        <label
                             string="Filter"
                             for="picker_filter"
                             class="me-3 d-none d-sm-block"
                         />
-                            <button
+                        <button
                             type="action"
                             name="%(sale_order_product_picker.product_normal_action_sell_picker)d"
                             icon="fa-gear"
                             class="btn-link d-none d-sm-block"
                             title="Manage product filters (Reload after modify)"
                         />
-                            <field
+                        <field
                             name="picker_filter"
                             widget="selection_badge"
                             class="d-none d-sm-block"
                         />
-                            <label for="picker_only_available" class="me-3 mx-sm-3" />
-                            <field
+                        <label for="picker_only_available" class="me-3 mx-sm-3" />
+                        <field
                             name="picker_only_available"
                             widget="boolean_toggle"
                             options="{'autosave': 0}"
                         />
-                            <label
+                        <label
                             string="Attribute"
                             for="picker_product_attribute_value_id"
                             class="mx-3"
                         />
-                            <field
+                        <field
                             name="picker_product_attribute_value_id"
                             options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                         />
@@ -379,8 +377,8 @@
                                                             t-elif="record.multiple_discounts.raw_value"
                                                         >
                                                             <span><i
-                                                                    class="fa fa-exclamation-triangle"
-                                                                /> Multiple discounts selected</span>
+                                                                class="fa fa-exclamation-triangle"
+                                                            /> Multiple discounts selected</span>
                                                         </div>
                                                     </div>
                                                     <div
@@ -389,13 +387,14 @@
                                                     >
                                                         <div class="col-12 text-muted">
                                                             Previous delivered: <field
-                                                                name="times_delivered"
-                                                            />
+                                                            name="times_delivered"
+                                                        />
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="col-12 text-muted">
-                                                        </div>
+                                                        <div
+                                                            class="col-12 text-muted"
+                                                        />
                                                     </div>
                                                 </div>
                                                 <div class="col-3">
@@ -472,5 +471,4 @@
         action="action_open_picker_views"
         groups="sales_team.group_sale_salesman"
     />
-
 </odoo>
