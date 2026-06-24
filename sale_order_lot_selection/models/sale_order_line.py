@@ -39,26 +39,17 @@ class SaleOrderLine(models.Model):
         for sol in self:
             sol.product_tracking = sol.product_id.tracking or sol.product_tracking
 
-    def _get_lot_id_quant_domain_locations(self):
-        """This method retrieves the location(s) that will later be used in
-        _domain_lot_id_quant_domain(). It will be useful to extend this method if,
-        for example, you want to search across different multi-warehouse
-        locations.
-        """
-        self.ensure_one()
-        return self.warehouse_id.lot_stock_id
-
     def _domain_lot_id_quant_domain(self):
         """This method defines the domain that will be used to obtain the appropriate
         stock.quant values and is useful for extending to other modules.
         """
         self.ensure_one()
-        locations = self._get_lot_id_quant_domain_locations()
         return [
             ("product_id", "=", self.product_id.id),
             ("quantity", ">=", self.product_uom_qty),
             ("lot_id", "!=", False),
-            ("location_id", "child_of", locations.ids),
+            ("location_id.usage", "=", "internal"),
+            ("location_id.warehouse_id", "=", self.warehouse_id.id),
         ]
 
     @api.depends("product_id", "product_uom_qty", "warehouse_id")
@@ -123,3 +114,18 @@ class SaleOrderLine(models.Model):
             pending_moves = moves.filtered(lambda x: x.state != "cancel")
             if pending_moves:
                 pending_moves._set_restrict_lot_id_from_sol(item.lot_id)
+
+    def _get_sale_order_fields(self):
+        field_names = super()._get_sale_order_fields()
+        field_names.append("lot_id")
+        return field_names
+
+    def read_converted(self):
+        results = super().read_converted()
+        lot_model = self.env["stock.lot"].sudo()
+        for result_item in results:
+            if result_item["lot_id"]:
+                lot = lot_model.browse(result_item["lot_id"])
+                result_item["lot_names"] = [lot.name]
+                result_item["lot_id"] = False
+        return results
