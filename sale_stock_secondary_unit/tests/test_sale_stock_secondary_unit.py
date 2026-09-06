@@ -38,7 +38,7 @@ class TestSaleStockOrderSecondaryUnit(BaseCommon):
                             "name": "unit-700",
                             "uom_id": cls.product_uom_unit.id,
                             "factor": 0.7,
-                        },
+                        }
                     )
                 ],
             }
@@ -55,6 +55,40 @@ class TestSaleStockOrderSecondaryUnit(BaseCommon):
             [("product_tmpl_id", "=", cls.product.product_tmpl_id.id)]
         )
         cls.product.sale_secondary_uom_id = cls.secondary_unit.id
+        # A second product, kept out of the order, to be added from the catalog
+        cls.product_2 = cls.env["product.product"].create(
+            {
+                "name": "test 2",
+                "type": "consu",
+                "is_storable": True,
+                "uom_id": cls.product_uom_kg.id,
+                "list_price": 100.00,
+            }
+        )
+        cls.product_2.product_tmpl_id.write(
+            {
+                "secondary_uom_ids": [
+                    Command.create(
+                        {
+                            "name": "unit-700-2",
+                            "uom_id": cls.product_uom_unit.id,
+                            "factor": 0.7,
+                        }
+                    )
+                ],
+            }
+        )
+        cls.secondary_unit_2 = cls.env["product.secondary.unit"].search(
+            [("product_tmpl_id", "=", cls.product_2.product_tmpl_id.id)]
+        )
+        cls.product_2.sale_secondary_uom_id = cls.secondary_unit_2.id
+        StockQuant.create(
+            {
+                "product_id": cls.product_2.id,
+                "location_id": cls.warehouse.lot_stock_id.id,
+                "quantity": 2000,
+            }
+        )
         cls.partner = cls.env["res.partner"].create({"name": "test - partner"})
         cls.order = cls.env["sale.order"].create(
             {
@@ -67,7 +101,7 @@ class TestSaleStockOrderSecondaryUnit(BaseCommon):
                             "product_uom_qty": 1,
                             "product_uom_id": cls.product.uom_id.id,
                             "price_unit": 1000.00,
-                        },
+                        }
                     )
                 ],
             }
@@ -81,3 +115,109 @@ class TestSaleStockOrderSecondaryUnit(BaseCommon):
         self.order.action_confirm()
         picking = self.order.picking_ids
         self.assertEqual(picking.move_line_ids.secondary_uom_qty, 5.0)
+
+    def _catalog_line(self, product):
+        return self.order.order_line.filtered(lambda line: line.product_id == product)
+
+    def test_catalog_new_line_on_confirmed_order(self):
+        """Adding a product from the catalog to a confirmed order must move the
+        secondary unit to the generated move, not the secondary quantity into
+        the product quantity.
+        """
+        self.order.action_confirm()
+        self.order._update_order_line_info(
+            self.product_2, 5, self.product_2.uom_id, "order_line"
+        )
+        line = self._catalog_line(self.product_2)
+        self.assertEqual(line.secondary_uom_id, self.secondary_unit_2)
+        self.assertEqual(line.secondary_uom_qty, 5.0)
+        self.assertEqual(line.product_uom_qty, 3.5)
+        self.assertEqual(line.move_ids.secondary_uom_id, self.secondary_unit_2)
+        self.assertEqual(line.move_ids.secondary_uom_qty, 5.0)
+        self.assertEqual(line.move_ids.product_uom_qty, 3.5)
+
+    def test_catalog_update_line_on_confirmed_order(self):
+        """Raising the catalog quantity of an existing line must propagate the
+        delta to the moves in both units.
+        """
+        self.order.action_confirm()
+        self.order._update_order_line_info(
+            self.product_2, 5, self.product_2.uom_id, "order_line"
+        )
+        self.order._update_order_line_info(
+            self.product_2, 8, self.product_2.uom_id, "order_line"
+        )
+        line = self._catalog_line(self.product_2)
+        self.assertEqual(line.secondary_uom_qty, 8.0)
+        self.assertEqual(line.product_uom_qty, 5.6)
+        moves = line.move_ids.filtered(lambda move: move.state != "cancel")
+        self.assertEqual(sum(moves.mapped("product_uom_qty")), 5.6)
+        self.assertEqual(sum(moves.mapped("secondary_uom_qty")), 8.0)
+
+    def test_write_secondary_uom_qty_propagates_to_pending_move(self):
+        """Correcting the piece count on an already-confirmed line (without
+        touching the primary quantity) must update the still-pending
+        delivery move directly - relaunching the stock rule
+        (_action_launch_stock_rule) is a no-op here: it only ever creates
+        a new move for a primary-quantity delta, it never touches an
+        existing move's secondary_uom_qty (confirmed empirically before
+        writing this test).
+        """
+        self.secondary_unit.dependency_type = "secondary_priority"
+        self.order.order_line.write(
+            {"secondary_uom_id": self.secondary_unit.id, "secondary_uom_qty": 5}
+        )
+        self.order.order_line._onchange_helper_product_uom_for_secondary()
+        self.order.action_confirm()
+        move = self.order.order_line.move_ids.filtered(
+            lambda m: m.state not in ("done", "cancel")
+        )
+        self.assertEqual(move.secondary_uom_qty, 5.0)
+
+        self.order.order_line.write({"secondary_uom_qty": 8})
+
+        self.assertEqual(move.secondary_uom_qty, 8.0)
+        # secondary_priority: the primary quantity is still estimated from
+        # the corrected count.
+        self.assertEqual(move.product_uom_qty, 8 * self.secondary_unit.factor)
+
+    def test_write_secondary_uom_qty_distributes_across_multiple_pending_moves(self):
+        """A line already partially processed can have more than one
+        pending move at once (e.g. a backorder pick still pending
+        alongside an earlier leg not yet processed) - the correction must
+        distribute proportionally to each move's current share, not
+        silently do nothing because there's more than one.
+        """
+        self.secondary_unit.dependency_type = "secondary_priority"
+        self.order.order_line.write(
+            {"secondary_uom_id": self.secondary_unit.id, "secondary_uom_qty": 10}
+        )
+        self.order.order_line._onchange_helper_product_uom_for_secondary()
+        self.order.action_confirm()
+        line = self.order.order_line
+        move_1 = line.move_ids.filtered(lambda m: m.state not in ("done", "cancel"))
+        self.assertEqual(len(move_1), 1)
+        move_1.secondary_uom_qty = 6.0  # 60% of the pending total
+
+        move_2 = self.env["stock.move"].create(
+            {
+                "product_id": line.product_id.id,
+                "sale_line_id": line.id,
+                "secondary_uom_id": self.secondary_unit.id,
+                "secondary_uom_qty": 4.0,  # 40% of the pending total
+                "uom_id": line.product_id.uom_id.id,
+                "product_uom_qty": move_1.product_uom_qty,
+                "location_id": move_1.location_id.id,
+                "location_dest_id": move_1.location_dest_id.id,
+            }
+        )
+        move_2._action_confirm()
+        pending_moves = line.move_ids.filtered(
+            lambda m: m.state not in ("done", "cancel")
+        )
+        self.assertEqual(len(pending_moves), 2)
+
+        line.write({"secondary_uom_qty": 20})
+
+        self.assertEqual(move_1.secondary_uom_qty, 12.0)
+        self.assertEqual(move_2.secondary_uom_qty, 8.0)
