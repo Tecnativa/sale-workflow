@@ -62,7 +62,6 @@ class TestSaleChainedMove(BaseCommon):
         # Set the routes on the product
         cls.product1.route_ids = [(4, cls.route.id)]
         cls.product2.route_ids = [(4, cls.route.id)]
-        return
 
     def _create_sale_order(self):
         vals = {
