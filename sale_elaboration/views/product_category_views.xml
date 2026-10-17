@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <record
-        model="ir.ui.view"
         id="sale_elaboration_product_category_view_form_inherit_elaboration_id"
+        model="ir.ui.view"
     >
         <field name="name">product.category.view.form.sale.elaboration</field>
         <field name="model">product.category</field>

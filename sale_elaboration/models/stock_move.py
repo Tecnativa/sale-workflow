@@ -51,8 +51,9 @@ class StockMove(models.Model):
                     continue
                 for move_elab in move.elaboration_ids:
                     sale_elab = move.sale_line_id.order_id.order_line.filtered(
-                        lambda x, move_elab=move_elab: x.product_id
-                        == move_elab.product_id
+                        lambda x, move_elab=move_elab: (
+                            x.product_id == move_elab.product_id
+                        )
                     )[:1]
                     if sale_elab:
                         sale_elab.product_uom_qty += qty_difference
