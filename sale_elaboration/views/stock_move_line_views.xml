@@ -6,7 +6,7 @@
         <field name="model">stock.move.line</field>
         <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree" />
         <field name="arch" type="xml">
-            <field name="product_uom_id" position="after">
+            <field name="uom_id" position="after">
                 <field
                     name="elaboration_ids"
                     widget="many2many_tags"
@@ -24,7 +24,7 @@
             ref="stock.view_stock_move_line_detailed_operation_tree"
         />
         <field name="arch" type="xml">
-            <field name="product_uom_id" position="after">
+            <field name="uom_id" position="after">
                 <field
                     name="elaboration_ids"
                     widget="many2many_tags"
@@ -39,7 +39,7 @@
         <field name="model">stock.move.line</field>
         <field name="inherit_id" ref="stock.view_move_line_tree_detailed" />
         <field name="arch" type="xml">
-            <field name="product_uom_id" position="after">
+            <field name="uom_id" position="after">
                 <field
                     name="elaboration_ids"
                     widget="many2many_tags"

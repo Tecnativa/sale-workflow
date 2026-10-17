@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+access_elaboration_user,access_elaboration_user,product.elaboration,base.group_user,r,
+access_elaboration_manager,access_elaboration_manager,product.elaboration,sales_team.group_sale_manager,crud,
+access_elaboration_portal,product.elaboration.portal,product.elaboration,base.group_portal,r,
+access_elaboration_profile_user,product_elaboration_profile_user,product.elaboration.profile,base.group_user,r,
+access_elaboration_profile_manager,product_elaboration_profile_manager,product.elaboration.profile,sales_team.group_sale_manager,crud,

@@ -5,7 +5,7 @@ from odoo import api, fields, models
 
 
 class StockMove(models.Model):
-    _inherit = ["stock.move", "product.elaboration.mixin"]
+    _inherit = ("stock.move", "product.elaboration.mixin")
     _name = "stock.move"
 
     # Helper fields to display elaborations in tree view

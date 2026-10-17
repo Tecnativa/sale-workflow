@@ -41,7 +41,7 @@ class SaleOrder(models.Model):
 
 
 class SaleOrderLine(models.Model):
-    _inherit = ["sale.order.line", "product.elaboration.mixin"]
+    _inherit = ("sale.order.line", "product.elaboration.mixin")
     _name = "sale.order.line"
 
     date_order = fields.Datetime(related="order_id.date_order", string="Date")

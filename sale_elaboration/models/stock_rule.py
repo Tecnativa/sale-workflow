@@ -10,7 +10,7 @@ class StockRule(models.Model):
         self,
         product_id,
         product_qty,
-        product_uom,
+        uom_id,
         location_id,
         name,
         origin,
@@ -20,7 +20,7 @@ class StockRule(models.Model):
         res = super()._get_stock_move_values(
             product_id,
             product_qty,
-            product_uom,
+            uom_id,
             location_id,
             name,
             origin,
