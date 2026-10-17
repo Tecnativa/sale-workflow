@@ -4,7 +4,7 @@
 {
     "name": "Sale Line Vendor Comment",
     "summary": """Add the vendor comment field to sale order line""",
-    "version": "18.0.1.0.0",
+    "version": "20.0.1.0.0",
     "license": "LGPL-3",
     "website": "https://github.com/OCA/sale-workflow",
     "author": "Tecnativa, Odoo Community Association (OCA)",
