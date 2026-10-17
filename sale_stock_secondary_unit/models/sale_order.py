@@ -19,14 +19,16 @@ class SaleOrderLine(models.Model):
     def write(self, vals):
         if "secondary_uom_qty" in vals:
             lines = self.filtered(lambda r: r.state == "sale" and not r.is_expense)
+            digits = self.env["decimal.precision"].precision_get("Product Unit")
             procure_secondary_uom_qty = {
                 line.id: float_round(
                     vals["secondary_uom_qty"] - line.secondary_uom_qty,
-                    precision_rounding=self.secondary_uom_id.uom_id.rounding or 0.01,
+                    precision_digits=digits,
                 )
                 for line in lines
             }
-            self = self.with_context(
-                procure_secondary_uom_qty=procure_secondary_uom_qty
-            )
+            return super(
+                SaleOrderLine,
+                self.with_context(procure_secondary_uom_qty=procure_secondary_uom_qty),
+            ).write(vals)
         return super().write(vals)
