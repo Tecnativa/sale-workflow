@@ -56,7 +56,7 @@
         id="product_secondary_unit_menu"
         name="Secondary Units of Measure"
         action="product_secondary_unit_action"
-        parent="sale.prod_config_main"
+        parent="sale.product_menu_catalog"
         sequence="36"
         groups="uom.group_uom"
     />

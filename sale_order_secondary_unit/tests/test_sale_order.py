@@ -8,6 +8,8 @@ from odoo.addons.base.tests.common import BaseCommon
 
 @tagged("post_install", "-at_install")
 class TestSaleOrder(BaseCommon):
+    _test_user_groups = ("sales_team.group_sale_salesman_all_leads", "uom.group_uom")
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

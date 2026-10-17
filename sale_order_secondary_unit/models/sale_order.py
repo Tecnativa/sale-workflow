@@ -1,23 +1,31 @@
 # Copyright 2018-2020 Tecnativa - Carlos Dauden
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+from typing import ClassVar
+
 from odoo import api, fields, models
-from odoo.http import request
 
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    def _update_order_line_info(self, product_id, quantity, **kwargs):
+    def _update_order_line_info(self, product, quantity, uom, child_field, **kwargs):
         # The catalog quantity refers to the unit the card shows (see
         # ``SaleOrderLine._get_product_catalog_lines_data``): the secondary unit
         # of the existing line, even when it differs from the product default
         # or the line has none, and the product default sale secondary unit
         # for a new line.
-        product = self.env["product.product"].browse(product_id)
-        sol = self.order_line.filtered(lambda line: line.product_id.id == product_id)
+        sol = self.order_line.filtered(lambda line: line.product_id == product)
         secondary_uom = sol.secondary_uom_id if sol else product.sale_secondary_uom_id
-        if not secondary_uom or quantity <= 0:
-            return super()._update_order_line_info(product_id, quantity, **kwargs)
+        if (
+            child_field != "order_line"
+            or len(sol) > 1
+            or not secondary_uom
+            or quantity <= 0
+            or self._is_readonly()
+        ):
+            return super()._update_order_line_info(
+                product, quantity, uom, child_field, **kwargs
+            )
         # The line is created/updated here instead of delegating to super()
         # because the secondary unit must already be on the line when the stock
         # rule is launched: on create for a confirmed order, and on the
@@ -26,8 +34,6 @@ class SaleOrder(models.Model):
         # patching the secondary unit afterwards leaves the generated moves
         # with the secondary quantity as their product quantity and no
         # secondary unit at all.
-        if request:
-            request.update_context(catalog_skip_tracking=True)
         if sol:
             sol.write(
                 {
@@ -43,48 +49,44 @@ class SaleOrder(models.Model):
                 }
             )
         else:
-            vals = {
-                "order_id": self.id,
-                "product_id": product_id,
-                "secondary_uom_id": secondary_uom.id,
-                "secondary_uom_qty": quantity,
-                "sequence": (
-                    (self.order_line and self.order_line[-1].sequence + 1) or 10
-                ),
-            }
+            vals = self._catalog_prepare_new_line_vals(
+                child_field, product, quantity, product.uom_id, **kwargs
+            )
+            vals.update(
+                {
+                    "secondary_uom_id": secondary_uom.id,
+                    "secondary_uom_qty": quantity,
+                }
+            )
             # product_uom_qty must be set explicitly for dependent secondary
             # units. Relying on the compute chain fails at create: the
             # product_uom compute recomputes secondary_uom_qty from the
             # still-default product_uom_qty (1.0), and product_uom_qty then ends
             # up derived from that stale value instead of the requested
-            # secondary quantity. Sizing it here mirrors the write branch and
-            # keeps the generated stock moves in the primary unit.
-            if secondary_uom.dependency_type != "independent":
-                qty_base = quantity * secondary_uom.factor
-                vals["product_uom_qty"] = product.uom_id._compute_quantity(
-                    qty_base, product.uom_id
-                )
+            # secondary quantity. Independent units keep the default quantity.
+            if secondary_uom.dependency_type == "independent":
+                vals.pop("product_uom_qty")
+            else:
+                vals["product_uom_qty"] = quantity * secondary_uom.factor
             sol = self.env["sale.order.line"].create(vals)
-        return sol._get_discounted_price()
+        return self._get_updated_order_line_info(sol, product, uom, **kwargs)
 
     def _get_product_catalog_order_data(self, products, **kwargs):
-        # Expose the unit name so the catalog card can show it next to the
-        # quantity input for products not in the order yet: the default sale
-        # secondary unit when defined, otherwise the unit of measure that will
-        # actually be added to the order.
+        # Products not in the order yet are added in their default sale
+        # secondary unit, so the card shows it instead of the units of measure
         res = super()._get_product_catalog_order_data(products, **kwargs)
-        for product in products:
-            if product.sale_secondary_uom_id:
-                res[product.id]["uomToAdd"] = product.sale_secondary_uom_id.display_name
-            else:
-                res[product.id]["uomToAdd"] = product.uom_id.display_name
+        for product in products.filtered("sale_secondary_uom_id"):
+            res[product.id]["uomDisplayName"] = (
+                product.sale_secondary_uom_id.display_name
+            )
+            res[product.id].pop("availableUoms", None)
         return res
 
 
 class SaleOrderLine(models.Model):
-    _inherit = ["sale.order.line", "product.secondary.unit.mixin"]
+    _inherit = ("sale.order.line", "product.secondary.unit.mixin")
     _name = "sale.order.line"
-    _secondary_unit_fields = {
+    _secondary_unit_fields: ClassVar[dict] = {
         "qty_field": "product_uom_qty",
         "uom_field": "product_uom_id",
     }
@@ -105,7 +107,7 @@ class SaleOrderLine(models.Model):
         if secondary_uom.dependency_type == "independent":
             return self.product_uom_qty
         qty_base = secondary_qty * secondary_uom.factor
-        return self.product_id.uom_id._compute_quantity(qty_base, self.product_uom)
+        return self.product_id.uom_id._compute_quantity(qty_base, self.product_uom_id)
 
     @api.depends("secondary_uom_qty", "secondary_uom_id")
     def _compute_product_uom_qty(self):
@@ -128,19 +130,20 @@ class SaleOrderLine(models.Model):
                 self.secondary_uom_qty = 1.0
                 self._onchange_helper_product_uom_for_secondary()
 
-    def _get_product_catalog_lines_data(self, **kwargs):
+    def _get_product_catalog_lines_data(self, parent_record, **kwargs):
         """Show the secondary unit quantity in the catalog when the line uses
         a secondary unit of measure, so it stays consistent with the quantity
         handled in ``SaleOrder._update_order_line_info``. When the line has no
-        secondary unit, expose its unit of measure instead.
+        secondary unit, show its unit of measure instead.
         """
-        res = super()._get_product_catalog_lines_data(**kwargs)
+        res = super()._get_product_catalog_lines_data(parent_record, **kwargs)
         if len(self) == 1:
             if self.secondary_uom_id:
                 res["quantity"] = self.secondary_uom_qty
-                res["uomToAdd"] = self.secondary_uom_id.display_name
+                res["uomDisplayName"] = self.secondary_uom_id.display_name
+                res.pop("availableUoms", None)
             else:
-                res["uomToAdd"] = self.product_uom.display_name
+                res["uomDisplayName"] = self.product_uom_id.display_name
         return res
 
     @api.depends("secondary_uom_qty", "product_uom_qty", "price_unit")

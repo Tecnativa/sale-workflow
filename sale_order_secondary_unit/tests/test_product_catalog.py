@@ -9,7 +9,7 @@ class TestProductCatalog(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         # Units of measure, and so the secondary unit fields, shown on the line
-        cls.env.user.groups_id += cls.env.ref("uom.group_uom")
+        cls.env.user.group_ids += cls.env.ref("uom.group_uom")
         cls.partner = cls.env["res.partner"].create({"name": "Catalog partner"})
         cls.product = cls.env["product.product"].create(
             {"name": "Catalog product", "sale_ok": True}
@@ -46,6 +46,7 @@ class TestProductCatalog(HttpCase):
                 "order_id": self.order.id,
                 "product_id": self.product.id,
                 "quantity": quantity,
+                "child_field": "order_line",
             },
         )
 
@@ -57,16 +58,19 @@ class TestProductCatalog(HttpCase):
                 "res_model": "sale.order",
                 "order_id": self.order.id,
                 "product_ids": self.product.ids,
+                "child_field": "order_line",
             },
         )
         return data[str(self.product.id)]["quantity"]
 
     def _set_line_secondary_unit(self, secondary_uom, secondary_qty):
-        with Form(self.order) as order_form:
-            with order_form.order_line.edit(0) as line_form:
-                line_form.secondary_uom_id = secondary_uom
-                if secondary_uom:
-                    line_form.secondary_uom_qty = secondary_qty
+        with (
+            Form(self.order) as order_form,
+            order_form.order_line.edit(0) as line_form,
+        ):
+            line_form.secondary_uom_id = secondary_uom
+            if secondary_uom:
+                line_form.secondary_uom_qty = secondary_qty
 
     def test_line_secondary_unit_without_product_default(self):
         """The product has no default sale secondary unit, so the catalog adds

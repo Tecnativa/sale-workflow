@@ -8,6 +8,8 @@ from odoo.addons.base.tests.common import BaseCommon
 
 @tagged("post_install", "-at_install")
 class TestProductTemplate(BaseCommon):
+    _test_user_groups = ("product.group_product_manager", "uom.group_uom")
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
